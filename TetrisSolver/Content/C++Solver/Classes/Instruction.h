@@ -9,8 +9,6 @@
 #define Instruction_h
 
 #import <Foundation/Foundation.h>
-#import <CoreGraphics/CoreGraphics.h>
-//#import "Info.h"
 
 @interface ObjC_Instruction : NSObject
 -(id) init: (int)x :(int)r :(bool)h;

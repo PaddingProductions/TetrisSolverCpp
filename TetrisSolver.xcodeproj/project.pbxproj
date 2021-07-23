@@ -7,17 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		142DEB1F269EADAB0028CB7C /* Tetris Info.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142DEB1E269EADAB0028CB7C /* Tetris Info.swift */; };
 		144147E9269A0E7A00922E0D /* Title.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144147E7269A0E7A00922E0D /* Title.swift */; };
 		144147EA269A0E7A00922E0D /* ScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144147E8269A0E7A00922E0D /* ScreenView.swift */; };
 		14454CD1268E83F400D15D76 /* Bitmap.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14454CD0268E83F400D15D76 /* Bitmap.mm */; };
 		14454CEC268EBFE700D15D76 /* Instruction.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14454CEB268EBFE700D15D76 /* Instruction.mm */; };
 		14826A0C2692A37800C6948C /* Coordinator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14BAD5AA268D79FD002AF2A2 /* Coordinator.mm */; };
-		14826A102692A37B00C6948C /* Algorithm.mm in Sources */ = {isa = PBXBuildFile; fileRef = 147BCB1B269277B8005C1254 /* Algorithm.mm */; };
+		14826A102692A37B00C6948C /* Solver.mm in Sources */ = {isa = PBXBuildFile; fileRef = 147BCB1B269277B8005C1254 /* Solver.mm */; };
 		14826A142692A37E00C6948C /* Reader.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14454CFA26916D2100D15D76 /* Reader.mm */; };
 		14826A182692A38000C6948C /* Info.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14454CF6268FF63000D15D76 /* Info.mm */; };
-		149063492661C07800F41A43 /* TetrisCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149063482661C07800F41A43 /* TetrisCoordinator.swift */; };
-		1490634E2661C50D00F41A43 /* TetrisImageReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1490634D2661C50D00F41A43 /* TetrisImageReader.swift */; };
-		149063532661D95700F41A43 /* Crop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149063522661D95700F41A43 /* Crop.swift */; };
 		149AD2D1264B7FD900703C9B /* TetrisSolverApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149AD2D0264B7FD900703C9B /* TetrisSolverApp.swift */; };
 		149AD2D3264B7FD900703C9B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149AD2D2264B7FD900703C9B /* ContentView.swift */; };
 		149AD2D5264B7FDA00703C9B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 149AD2D4264B7FDA00703C9B /* Assets.xcassets */; };
@@ -27,10 +25,8 @@
 		149BBE29267C3FAE00530635 /* KeyPresser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149BBE28267C3FAE00530635 /* KeyPresser.swift */; };
 		149BBE2E267C401A00530635 /* Clicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149BBE2D267C401A00530635 /* Clicker.swift */; };
 		149BBE34267C413E00530635 /* KeyCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149BBE33267C413E00530635 /* KeyCodes.swift */; };
-		149BBE3C267C4FBA00530635 /* TetrisSolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149BBE3B267C4FBA00530635 /* TetrisSolver.swift */; };
-		149BBE42267D62C800530635 /* Tetris Info.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149BBE41267D62C800530635 /* Tetris Info.swift */; };
 		14CB5394265DF32700592B94 /* WindowSelector .swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CB5393265DF32700592B94 /* WindowSelector .swift */; };
-		14FA33EB265B170400EB5342 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14FA33EA265B170400EB5342 /* Color.swift */; };
+		14D8F65826A7DF530080719C /* Evaluator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14D8F65726A7DF530080719C /* Evaluator.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		142DEB1E269EADAB0028CB7C /* Tetris Info.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Tetris Info.swift"; sourceTree = "<group>"; };
 		144147E7269A0E7A00922E0D /* Title.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Title.swift; sourceTree = "<group>"; };
 		144147E8269A0E7A00922E0D /* ScreenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScreenView.swift; sourceTree = "<group>"; };
 		14454CD0268E83F400D15D76 /* Bitmap.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Bitmap.mm; sourceTree = "<group>"; };
@@ -60,13 +57,10 @@
 		14454CEB268EBFE700D15D76 /* Instruction.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Instruction.mm; sourceTree = "<group>"; };
 		14454CF6268FF63000D15D76 /* Info.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Info.mm; sourceTree = "<group>"; };
 		14454CFA26916D2100D15D76 /* Reader.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Reader.mm; sourceTree = "<group>"; };
-		147BCB1B269277B8005C1254 /* Algorithm.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Algorithm.mm; sourceTree = "<group>"; };
+		147BCB1B269277B8005C1254 /* Solver.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Solver.mm; sourceTree = "<group>"; };
 		147BCB25269282D7005C1254 /* Info.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Info.h; sourceTree = "<group>"; };
-		147BCB29269283A1005C1254 /* Algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Algorithm.h; sourceTree = "<group>"; };
+		147BCB29269283A1005C1254 /* Solver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Solver.h; sourceTree = "<group>"; };
 		147BCB2A269283B2005C1254 /* Reader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Reader.h; sourceTree = "<group>"; };
-		149063482661C07800F41A43 /* TetrisCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TetrisCoordinator.swift; sourceTree = "<group>"; };
-		1490634D2661C50D00F41A43 /* TetrisImageReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TetrisImageReader.swift; sourceTree = "<group>"; };
-		149063522661D95700F41A43 /* Crop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Crop.swift; sourceTree = "<group>"; };
 		149AD2CD264B7FD900703C9B /* ScreenReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScreenReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		149AD2D0264B7FD900703C9B /* TetrisSolverApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TetrisSolverApp.swift; sourceTree = "<group>"; };
 		149AD2D2264B7FD900703C9B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -83,12 +77,11 @@
 		149BBE28267C3FAE00530635 /* KeyPresser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPresser.swift; sourceTree = "<group>"; };
 		149BBE2D267C401A00530635 /* Clicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clicker.swift; sourceTree = "<group>"; };
 		149BBE33267C413E00530635 /* KeyCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodes.swift; sourceTree = "<group>"; };
-		149BBE3B267C4FBA00530635 /* TetrisSolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TetrisSolver.swift; sourceTree = "<group>"; };
-		149BBE41267D62C800530635 /* Tetris Info.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Tetris Info.swift"; sourceTree = "<group>"; };
 		14BAD5A9268D79EE002AF2A2 /* Coordinator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Coordinator.h; sourceTree = "<group>"; };
 		14BAD5AA268D79FD002AF2A2 /* Coordinator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Coordinator.mm; sourceTree = "<group>"; };
 		14CB5393265DF32700592B94 /* WindowSelector .swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowSelector .swift"; sourceTree = "<group>"; };
-		14FA33EA265B170400EB5342 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		14D8F65626A7DF350080719C /* Evaluator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Evaluator.h; sourceTree = "<group>"; };
+		14D8F65726A7DF530080719C /* Evaluator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Evaluator.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,15 +109,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		144147E6269A0E7A00922E0D /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				144147E7269A0E7A00922E0D /* Title.swift */,
-				144147E8269A0E7A00922E0D /* ScreenView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 		14454CCF268E83D900D15D76 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -152,21 +136,9 @@
 				14454CD8268E867D00D15D76 /* Inputs */,
 				149AD300264B803F00703C9B /* TargetWindow.swift */,
 				14CB5393265DF32700592B94 /* WindowSelector .swift */,
-				14FA33EA265B170400EB5342 /* Color.swift */,
-				149063522661D95700F41A43 /* Crop.swift */,
+				142DEB1E269EADAB0028CB7C /* Tetris Info.swift */,
 			);
 			path = Helper;
-			sourceTree = "<group>";
-		};
-		149063472661C02100F41A43 /* Solver */ = {
-			isa = PBXGroup;
-			children = (
-				149063482661C07800F41A43 /* TetrisCoordinator.swift */,
-				1490634D2661C50D00F41A43 /* TetrisImageReader.swift */,
-				149BBE41267D62C800530635 /* Tetris Info.swift */,
-				149BBE3B267C4FBA00530635 /* TetrisSolver.swift */,
-			);
-			path = Solver;
 			sourceTree = "<group>";
 		};
 		149AD2C4264B7FD900703C9B = {
@@ -206,9 +178,9 @@
 			isa = PBXGroup;
 			children = (
 				14454CE0268E964A00D15D76 /* ScreenReader-Bridging-Header.h */,
-				144147E6269A0E7A00922E0D /* Views */,
+				144147E7269A0E7A00922E0D /* Title.swift */,
+				144147E8269A0E7A00922E0D /* ScreenView.swift */,
 				14BAD5A8268D6E8C002AF2A2 /* C++Solver */,
-				149063472661C02100F41A43 /* Solver */,
 				149063462661BFFC00F41A43 /* Helper */,
 			);
 			path = Content;
@@ -238,8 +210,10 @@
 				14454CCF268E83D900D15D76 /* Classes */,
 				14BAD5A9268D79EE002AF2A2 /* Coordinator.h */,
 				14BAD5AA268D79FD002AF2A2 /* Coordinator.mm */,
-				147BCB29269283A1005C1254 /* Algorithm.h */,
-				147BCB1B269277B8005C1254 /* Algorithm.mm */,
+				147BCB29269283A1005C1254 /* Solver.h */,
+				147BCB1B269277B8005C1254 /* Solver.mm */,
+				14D8F65626A7DF350080719C /* Evaluator.h */,
+				14D8F65726A7DF530080719C /* Evaluator.mm */,
 				147BCB2A269283B2005C1254 /* Reader.h */,
 				14454CFA26916D2100D15D76 /* Reader.mm */,
 				147BCB25269282D7005C1254 /* Info.h */,
@@ -382,22 +356,18 @@
 				149AD2D3264B7FD900703C9B /* ContentView.swift in Sources */,
 				14826A142692A37E00C6948C /* Reader.mm in Sources */,
 				14826A182692A38000C6948C /* Info.mm in Sources */,
+				142DEB1F269EADAB0028CB7C /* Tetris Info.swift in Sources */,
 				14454CD1268E83F400D15D76 /* Bitmap.mm in Sources */,
+				14D8F65826A7DF530080719C /* Evaluator.mm in Sources */,
 				144147EA269A0E7A00922E0D /* ScreenView.swift in Sources */,
 				14CB5394265DF32700592B94 /* WindowSelector .swift in Sources */,
-				149BBE42267D62C800530635 /* Tetris Info.swift in Sources */,
 				149AD2D1264B7FD900703C9B /* TetrisSolverApp.swift in Sources */,
-				14826A102692A37B00C6948C /* Algorithm.mm in Sources */,
-				149063532661D95700F41A43 /* Crop.swift in Sources */,
+				14826A102692A37B00C6948C /* Solver.mm in Sources */,
 				149AD301264B803F00703C9B /* TargetWindow.swift in Sources */,
 				149BBE34267C413E00530635 /* KeyCodes.swift in Sources */,
-				149063492661C07800F41A43 /* TetrisCoordinator.swift in Sources */,
 				14454CEC268EBFE700D15D76 /* Instruction.mm in Sources */,
 				149BBE2E267C401A00530635 /* Clicker.swift in Sources */,
 				14826A0C2692A37800C6948C /* Coordinator.mm in Sources */,
-				1490634E2661C50D00F41A43 /* TetrisImageReader.swift in Sources */,
-				14FA33EB265B170400EB5342 /* Color.swift in Sources */,
-				149BBE3C267C4FBA00530635 /* TetrisSolver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

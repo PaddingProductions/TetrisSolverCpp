@@ -9,10 +9,8 @@
 #define Reader_h
 
 #include "Bitmap.h"
-#include "Instruction.h"
-#include <vector>
-#include <map>
-#include <list>
+#include "Info.h"
+
 
 extern int blockSize;
 
@@ -23,7 +21,6 @@ Pos TetrisGetPreviewCorner (ObjC_Bitmap* bitmap, Pos& tC);
 
 int TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC);
 int getCurrentPiece(ObjC_Bitmap* bitmap, Pos& tC);
-int getCurrentPiecePos (ObjC_Bitmap* Bitmap, Pos& tC);
 
 int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, int cP);
 void initialize_ColorToPiece();

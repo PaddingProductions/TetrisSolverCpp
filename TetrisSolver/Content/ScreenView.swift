@@ -12,14 +12,9 @@ struct ScreenView: View {
     
     let solveMode: Bool = true;
     let targetWindow: TargetWindow
-    let zoomW: Double = 100.0
-    let zoomH: Double = 100.0
     @State var screenImage: CGImage? = nil
     @State var screenBitmap: ObjC_Bitmap?
-    @State var mousePos: CGPoint = CGPoint(x: 0, y:0)
-    @State var mouseColor: Int = 0
-    @State var mouseZoomImage: CGImage? = nil
-    @State var solver: ObjC_Coordinator?
+    @State var m_solver: ObjC_Coordinator?
     let speed: Double = 5; // in PPS
     let delay: Int;
     
@@ -40,21 +35,6 @@ struct ScreenView: View {
         self.screenBitmap = bitmap
     }
     
-    func onMouseClick (mouseWindowPos: CGPoint, geo: GeometryProxy) {
-        let x = Double(mouseWindowPos.x) / Double( geo.size.width ) * Double(screenImage!.width )
-        let y = Double(mouseWindowPos.y) / Double( geo.size.height) * Double(screenImage!.height)
-        
-        mousePos = CGPoint(x:Int(x),y:Int(y))
-        mouseColor = Int(screenBitmap!.getValue( Int32(x), Int32(y) ))
-        mouseZoomImage = cropToBounds(
-            image: screenImage!,
-            x: x,
-            y: y,
-            width : zoomW,
-            height: zoomH
-        )
-    }
-    
     var body: some View {
         ScrollView{
             //Stats & interactive buttons
@@ -64,25 +44,27 @@ struct ScreenView: View {
                         Button("Update") {
                             update()
                         }
-                        if (solver != nil) {
+                        if (m_solver != nil) {
                             Button("init") {
-                                solver = ObjC_Coordinator(screenBitmap, windowPos: targetWindow.pos)
+                                m_solver = ObjC_Coordinator(screenBitmap, windowPos: targetWindow.pos)
                             }
                             Button("General Solve") {
                                 LClick (pos: CGPoint(x: targetWindow.pos.x + 10, y: targetWindow.pos.y + 10))
                                 PressKey(key: Keycode.f4)
 
                                 usleep(1900000)
-                                while (!solver!.begin(screenBitmap!)) {
+                                self.update()
+                                
+                                while (!m_solver!.reset(screenBitmap!)) {
                                     self.update()
                                     usleep(100)
                                 }
-                                print(" ---- begun");
-                                while (!solver!.gameOver() && !solver!.abort()) {
+                                print(" ---- beginning")
+                                while (!m_solver!.gameOver()) {
                                     
                                     let start = DispatchTime.now()
 
-                                    let commands = solver!.solve()
+                                    let commands = m_solver!.solve()
                                     let instruction = TetrisInstruction(
                                         x: Int(commands!.x()),
                                         r: Int(commands!.r()),
@@ -92,25 +74,28 @@ struct ScreenView: View {
                                     
                                     let end = DispatchTime.now()
                                     let microTime: Int = Int((end.uptimeNanoseconds - start.uptimeNanoseconds) / 1000)
-                                    print ( useconds_t(max( 1, delay - microTime )) )
                                     usleep( useconds_t(max( 1, delay - microTime )) )
                                     self.update()
-                                    solver!.update(screenBitmap!)
+                                    m_solver!.update(screenBitmap!)
                                 }
-                                print(" ---- end")
                             }
                             Button("Limited Solve") {
                                 LClick (pos: CGPoint(x: targetWindow.pos.x + 10, y: targetWindow.pos.y + 10))
                                 PressKey(key: Keycode.f4)
+
+                                usleep(1900000)
+                                self.update()
                                 
-                                while (!solver!.begin(screenBitmap!)) {
+                                while (!m_solver!.reset(screenBitmap!)) {
                                     self.update()
-                                    usleep(100000)
+                                    usleep(100)
                                 }
-                                for _ in 0..<3 {
+                                print(" ---- beginning")
+                                for _ in 0..<5 {
+                                    
                                     let start = DispatchTime.now()
 
-                                    let commands = solver!.solve()
+                                    let commands = m_solver!.solve()
                                     let instruction = TetrisInstruction(
                                         x: Int(commands!.x()),
                                         r: Int(commands!.r()),
@@ -119,53 +104,20 @@ struct ScreenView: View {
                                     instruction.execute()
                                     
                                     let end = DispatchTime.now()
-                                    let nanoTime = end.uptimeNanoseconds - start.uptimeNanoseconds
-                                    usleep(
-                                        max(
-                                            1,
-                                            useconds_t(
-                                                UInt64( delay * 1_000_000_000) - nanoTime
-                                            )
-                                        )
-                                    )
+                                    let microTime: Int = Int((end.uptimeNanoseconds - start.uptimeNanoseconds) / 1000)
+                                    usleep( useconds_t(max( 1, delay - microTime )) )
                                     self.update()
-                                    solver!.update(screenBitmap!)
+                                    m_solver!.update(screenBitmap!)
                                 }
-                                print(" ---- end")
                             }
                         }
                     }
-                    VStack {
-                        Text("X: \(mousePos.x)")
-                        Text("Y: \(mousePos.y)")
-                    }
-                    VStack {
-                        Text("Hex: \(mouseColor)")
-                        Text("B: \(intToHex(int: self.mouseColor)[0])")
-                        Text("G: \(intToHex(int: self.mouseColor)[1])")
-                        Text("R: \(intToHex(int: self.mouseColor)[2])")
-                        Text("A: \(intToHex(int: self.mouseColor)[3])")
-                    }
-                    
-                    Circle()
-                        .fill(Color(color: mouseColor))
-                        .frame(width: 100, height: 100)
-                    
-                    if mouseZoomImage != nil {
-                        Image(decorative: mouseZoomImage!, scale: 1.0)
-                    }
                 }
             }
-            //TetrisSolverView(solver: solver!)
             if self.screenImage != nil {
                     GeometryReader { geo in
                         Image(decorative: screenImage!, scale: 1.0)
                             .resizable()
-                            .gesture (
-                                DragGesture (minimumDistance: 0).onEnded({ (value) in
-                                    self.onMouseClick(mouseWindowPos: value.location, geo: geo)
-                                })
-                            )
                     }
                     .aspectRatio(
                         CGFloat(Double(screenImage!.width) / Double(screenImage!.height)),
@@ -175,7 +127,7 @@ struct ScreenView: View {
         }
         .onAppear() {
             self.update()
-            solver = ObjC_Coordinator(screenBitmap, windowPos: targetWindow.pos)
+            m_solver = ObjC_Coordinator(screenBitmap, windowPos: targetWindow.pos)
         }
     }
 }

@@ -1,13 +1,13 @@
 //
-//  Reader.m
+//  Reader.mm
 //  TetrisSolver
 //
 //  Created by shine on 7/3/21.
 //
 
 #import <Foundation/Foundation.h>
-#import "Info.h"
-#include "Instruction.h"
+#include "Info.h"
+#include "Reader.h"
 #include "Bitmap.h"
 
 #include <vector>
@@ -42,8 +42,7 @@ void initialize_ColorToPiece () {
     ColorToPiece[0xd29a43ff] = 5;
     ColorToPiece[0x37a1daff] = 6;
 }
-
-uint32_t PieceToShadow[7] = {
+uint32_t shadowColor[7] = {
     0x5f2112ff, //J
     0x103169ff, //L
     0x155637ff, //S
@@ -54,7 +53,7 @@ uint32_t PieceToShadow[7] = {
 };
 
 Pos TetrisGetTopCorner (ObjC_Bitmap* bitmap)  {
-    Pos pos = Pos(0, [bitmap height] / 3);
+    Pos pos = Pos(0, [bitmap height] / 2);
     uint32_t color = [bitmap getValue:pos.x :pos.y];
     
     while (color == black) {
@@ -68,6 +67,7 @@ Pos TetrisGetTopCorner (ObjC_Bitmap* bitmap)  {
     pos.y ++;
     return pos;
 }
+
 Pos TetrisGetBottomCorner (ObjC_Bitmap* bitmap, Pos& tC) {
     
     Pos pos = tC;
@@ -103,11 +103,10 @@ Pos TetrisGetPreviewCorner (ObjC_Bitmap* bitmap, Pos& tC) {
 int TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC) {
     for (int y=0; y<3; y++) {
         for (int x=0; x<4; x++) {
-            uint32_t color =[bitmap getValue: refC.x + x*blockSize +10 :refC.y + y*blockSize +10];
+            uint32_t color = [bitmap getValue: refC.x + x*blockSize +10 :refC.y + y*blockSize +10];
             
             if (ColorToPiece.count(color))
-                return ColorToPiece[color]
-                ;
+                return ColorToPiece[color];
         }
     }
     return -1;
@@ -119,25 +118,13 @@ int getCurrentPiece(ObjC_Bitmap* bitmap, Pos& tC) {
     for (int y=0; y<20; y++) {
         uint32_t color = [bitmap getValue:pos.x +10 :pos.y + y*blockSize +10];
         
-        if (ColorToPiece.count(color)) {
-            NSLog(@" ---- found color: %x, returned %c", color, PieceNames[ColorToPiece[color]]);
+        if (ColorToPiece.count(color))
             return ColorToPiece[color];
-        }
     }
+
     return -1;
 }
 
-int getCurrentPiecePos (ObjC_Bitmap* bitmap, Pos& tC) {
-    Pos pos = tC;
-    pos.x += 4*blockSize;
-    for (int y=0; y<20; y++) {
-        uint32_t color = [bitmap getValue:pos.x +10 :pos.y + y*blockSize +10];
-        
-        if (ColorToPiece.count(color))
-            return y;
-    }
-    return -1;
-}
 
 int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, int cP) {
     Pos pos = tC;
@@ -145,8 +132,7 @@ int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, int cP) {
     pos.y += y * blockSize  + 10;
     uint32_t color = [bitmap getValue:pos.x :pos.y];
     
-    // we need to ignore it if it's a node of the current piece, otherwise it would think there's a floating island
-    if (color == PieceToShadow[cP])
+    if (color == shadowColor[cP])
         return 0;
     if (color == grey)
         return -1;

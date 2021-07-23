@@ -14,6 +14,12 @@
 
 extern char PieceNames[7];
 
+struct Pos {
+    Pos (int _x, int _y);
+    int x;
+    int y;
+};
+
 struct Instruction {
     Instruction (int _x, int _r);
     int x;
@@ -21,32 +27,28 @@ struct Instruction {
     bool hold = false;
 };
 
+struct TSpin {
+    TSpin();
+    TSpin(Pos& pos, int type);
+    Pos pos = Pos(0,0);
+    int type;
+    std::list<int> wells;
+    const int* map;
+};
+
 struct Future {
     Future ();
-    Future (const std::vector<std::vector<int>>& c);
+    Future (const std::vector<std::vector<int>>& chart);
     std::vector<std::vector<int>> chart;
+    std::vector<std::vector<int>> desiredChart;
     Instruction instruction = Instruction(0,0);
     bool impossible = false;
-    int score = 0;
     int clears = 0;
-    int holes = 0;
-    bool downstack = false;
     int holdPiece = -1;
-    int penalties = 0;
+    int score = 0;
+    TSpin tspin = TSpin();
 };
 
-struct Present {
-    Present ();
-    Present (const std::vector<std::vector<int>>& chart);
-    bool critical = false;
-    int maxH = -1;
-};
-
-struct Pos {
-    Pos (int _x, int _y);
-    int x;
-    int y;
-};
 
 struct Piece {
     Piece (int _ID, int _x, int _r);
@@ -68,5 +70,9 @@ struct PieceMap {
 extern int pieceInitialPos;
 extern PieceMap pieceMaps[7];
 
+
+extern const int* TSpinDoubleMaps [2];
+extern const int TSpinDoubleLMap [9];
+extern const int TSpinDoubleRMap [9];
 
 #endif /* Info_h */

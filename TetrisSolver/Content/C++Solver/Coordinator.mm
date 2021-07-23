@@ -8,7 +8,7 @@
 #include "Instruction.h"
 #include "Info.h"
 #include "Reader.h"
-#include "Algorithm.h"
+#include "Solver.h"
 
 using namespace std;
 
@@ -20,11 +20,12 @@ struct TetrisCoordinator {
         , m_previewCorner(TetrisGetPreviewCorner(bitmap, m_topCorner))
         , m_windowPos(wP) {
         
-        m_chart.resize(20);
+        vector<vector<int>> chart;
+        chart.resize(20);
         for (int y=0; y<20; y++) {
-            m_chart[y].resize(10);
+            chart[y].resize(10);
             for (int x=0; x<10; x++) {
-                m_chart[y][x] = 0;
+                chart[y][x] = 0;
             }
         }
         if (m_topCorner.x > 500 || m_topCorner.y > 500) {
@@ -35,8 +36,9 @@ struct TetrisCoordinator {
     
     bool initPieces (ObjC_Bitmap* bitmap) {
  
-         m_gameOver = false;
-         m_currentPiece = getCurrentPiece(bitmap, m_topCorner);
+        m_gameOver = false;
+        m_hold = -1;
+        m_currentPiece = getCurrentPiece(bitmap, m_topCorner);
        
         if (m_currentPiece == -1) {  // safety
             return false;
@@ -46,16 +48,13 @@ struct TetrisCoordinator {
             Pos corner = Pos(m_previewCorner.x, m_previewCorner.y + (i * blockSize * 3));
             int piece = TetrisGetPiece(bitmap, corner);
             
-            if (piece == -1) {  // safety
-                return false;
-            }
             m_previews.push_back(piece);
         }
 
         for (int y=0; y<20; y++) {
             for (int x=0; x<10; x++) {
                     
-                if (x >= 3 && x <= 6 && y == 0) continue;
+                if (x >= 3 && x <= 6 && y < 2) { m_chart[y][x] = 0; continue; }
                     
                 m_chart[y][x] = checkIfFilled(
                     bitmap,
@@ -66,30 +65,24 @@ struct TetrisCoordinator {
                 );
             }
         }
-        NSLog(@"pieces: c: %c, p: %c, %c, %c, %c, %c", PieceNames[m_currentPiece], PieceNames[m_previews[0]], PieceNames[m_previews[1] ], PieceNames[m_previews[2]], PieceNames[m_previews[3]], PieceNames[m_previews[4]]);
-        
         return true;
     }
     
     ObjC_Instruction* solve () {
         
-        int pieces[2] = {
-            m_currentPiece,
-            m_previews[0]
-        };
         
-        if (m_currentPiece == -1) {
+        if (m_currentPiece == -1)
             NSLog(@"Error, currentPiece Error.");
-        }
+        
+
         Future future = Future();
         if (m_hold != -1)
-            future = TetrisSolver(m_chart, pieces, m_hold, 2);
+            future = TetrisSolver(m_chart, m_currentPiece, m_hold);
         else
-            future = TetrisSolver(m_chart, pieces, m_previews[0], 1);
+            future = TetrisSolver(m_chart, m_currentPiece, m_previews[0]);
 
-        if (future.instruction.hold == true) {
+        if (future.instruction.hold == true)
             m_hold = future.holdPiece;
-        }
         
         return [[ObjC_Instruction alloc] init:future.instruction.x :future.instruction.r :future.instruction.hold];
     }
@@ -111,17 +104,19 @@ struct TetrisCoordinator {
         m_gameOver = true;
         bool perfectClear = false;
         
-        int currentPiecePos = getCurrentPiecePos(bitmap, m_topCorner);
         for (int y=0; y<20; y++) {
             for (int x=0; x<10; x++) {
-                if (x >= 3 && x <= 6 && y == 0) continue;
+                if (x >= 3 && x <= 6 && y < 1) {
+                    m_chart[y][x] = 0;
+                    continue;
+                }
                 
                 m_chart[y][x] = checkIfFilled(
                     bitmap,
                     m_topCorner,
                     x,
                     y,
-                    currentPiecePos
+                    m_currentPiece
                 );
                 Pos pos = m_topCorner;
                 pos.x += x * blockSize +10;
@@ -146,16 +141,6 @@ struct TetrisCoordinator {
         return m_gameOver;
     }
     
-    void generateHoldList (int* list, const int* pieces, int size) {
-        
-        for (int i=0; i<size; i++) {
-            if (m_hold != -1)
-                list[i] = m_hold;
-            else
-                list[i] = m_previews[i];
-        }
-    }
-    
     
     Pos m_topCorner;
     Pos m_bottomCorner;
@@ -175,7 +160,6 @@ struct TetrisCoordinator {
 @implementation ObjC_Coordinator
 {
     TetrisCoordinator* m_solver;
-    bool m_gameOver;
     int m_timeConsumed;
 }
 
@@ -186,7 +170,6 @@ struct TetrisCoordinator {
         initialize_ColorToPiece();
         Pos wPos = Pos(int(windowPos.x), int(windowPos.y));
         m_solver = new TetrisCoordinator(bitmap, wPos);
-        m_gameOver = m_solver->m_gameOver;
     }
     return self;
 }
@@ -194,18 +177,17 @@ struct TetrisCoordinator {
 - (void) dealloc {
     delete m_solver;
 }
-
--(bool) begin: (ObjC_Bitmap*)bitmap {
+-(bool) reset: (ObjC_Bitmap*)bitmap {
     return m_solver->initPieces(bitmap);
 }
 -(void) update: (ObjC_Bitmap*) bitmap {
-    m_gameOver = m_solver->update(bitmap);
+    m_solver->update(bitmap);
 }
 -(ObjC_Instruction*) solve {
     return m_solver->solve();
 }
 -(bool) gameOver {
-    return m_gameOver;
+    return m_solver->m_gameOver;
 }
 -(bool) abort {
     return m_solver->m_abort;

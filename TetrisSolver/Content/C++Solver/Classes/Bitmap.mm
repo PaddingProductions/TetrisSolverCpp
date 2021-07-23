@@ -7,11 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
-#include <algorithm>
-#include <vector>
-
-#import "Instruction.h"
-#import "Bitmap.h"
+#include "Bitmap.h"
 
 using namespace std;
 

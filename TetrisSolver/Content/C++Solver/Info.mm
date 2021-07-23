@@ -20,32 +20,32 @@ Instruction::Instruction (int _x, int _r) {
 }
 
 Future::Future () {}
-Future::Future (const vector<vector<int>>& c) {
+Future::Future (const std::vector<std::vector<int>>& c) {
     chart = c;
-    if (chart.size() == 0) {
-        NSLog(@"halt");
+    desiredChart.resize(20);
+    for (int y=0; y<20; y++) {
+        desiredChart[y].resize(10);
+        for (int x=0; x<20; x++) {
+            desiredChart[y][x] = 0;
+        }
     }
 }
 
-
-Present::Present () {}
-Present::Present (const vector<vector<int>>& chart) {
-        // average height
-        for (int x=0; x<10; x++) {
-            int height = -1;
-            for (int y=0; y<20; y++) {
-                if (chart[y][x]) {
-                    height = 20 - y;
-                    break;
-                }
-            }
-            maxH = max( maxH, height );
-        }
-
-        if (maxH >= 15) {
-            critical = true;
-        }
+TSpin::TSpin() {};
+TSpin::TSpin(Pos& p, int t) {
+    pos = p;
+    type = t;
+    switch (type / 10) {
+        case 2:
+            map = TSpinDoubleMaps[type % 10];
+            wells.push_back(p.y);
+            if (type % 10 == 0)
+                wells.push_back(p.y +1);
+            else
+                wells.push_back(p.y -1);
     }
+};
+
 
 int pieceInitialPos = 4;
 char PieceNames[7] = {
@@ -280,3 +280,15 @@ PieceMap pieceMaps[7] = {
     )
 };
 
+
+const int* TSpinDoubleMaps[2] = {TSpinDoubleRMap, TSpinDoubleLMap};
+const int TSpinDoubleLMap [9] = {
+     1,-1,-1,
+    -1,-1,-1,
+     1,-1, 1,
+};
+const int TSpinDoubleRMap [9] {
+    -1,-1, 1,
+    -1,-1,-1,
+     1,-1, 1,
+};

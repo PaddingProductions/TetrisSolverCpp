@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 #import "Instruction.h"
-//#import "Info.h"
 
 @implementation ObjC_Instruction
 {
