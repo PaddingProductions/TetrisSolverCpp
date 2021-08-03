@@ -9,6 +9,7 @@
 #define Evaluator_h
 
 #include "Info.h"
+#include <vector>
 
 int Evaluate (Future* future);
 

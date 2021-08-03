@@ -8,7 +8,7 @@
 import Foundation
 
 
-func PressKey (key: CGKeyCode) {
+func PressKey (key: CGKeyCode, hold: Int = 10) {
     
     let keyDown = CGEvent(
         keyboardEventSource: nil,
@@ -24,6 +24,7 @@ func PressKey (key: CGKeyCode) {
         virtualKey: key,
         keyDown:false
     )!
+    usleep(useconds_t(hold))
     keyUp.post(
         tap: .cghidEventTap
     )

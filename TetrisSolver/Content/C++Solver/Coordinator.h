@@ -20,8 +20,10 @@
 -(void) update: (ObjC_Bitmap*) bitmap;
 -(bool) reset: (ObjC_Bitmap*) bitmap;
 -(bool) gameOver;
--(bool) abort;
-
+-(void) set_FindTspins :(bool) input;
+-(NSString*) testSolver: (NSString*) STRchart piece: (int)piece;
+-(NSString*) testEvaluator: (NSString*) STRchart;
+ 
 @end
 
 #endif /* Coordinator_h */

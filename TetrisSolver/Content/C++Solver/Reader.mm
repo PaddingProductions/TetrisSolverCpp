@@ -112,8 +112,21 @@ int TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC) {
     return -1;
 }
 
-int getCurrentPiece(ObjC_Bitmap* bitmap, Pos& tC) {
-    Pos pos = tC;
+int GetInitialPiece (ObjC_Bitmap* bitmap, Pos& tC) {
+
+    for (int y=0; y<20; y++) {
+        for (int x=0; x<10; x++) {
+            uint32_t color = [bitmap getValue :tC.x +x*blockSize +10 :tC.y + y*blockSize +10];
+
+            if (ColorToPiece.count(color))
+                return ColorToPiece[color];
+        }
+    }
+
+    return -1;
+}
+int getCurrentPiece(ObjC_Bitmap* bitmap, Pos pos) {
+
     pos.x +=4*blockSize;
     for (int y=0; y<20; y++) {
         uint32_t color = [bitmap getValue:pos.x +10 :pos.y + y*blockSize +10];
@@ -124,6 +137,7 @@ int getCurrentPiece(ObjC_Bitmap* bitmap, Pos& tC) {
 
     return -1;
 }
+
 
 
 int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, int cP) {

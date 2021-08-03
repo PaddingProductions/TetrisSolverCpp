@@ -20,7 +20,8 @@ Pos TetrisGetHoldCorner (ObjC_Bitmap* bitmap, Pos& tC);
 Pos TetrisGetPreviewCorner (ObjC_Bitmap* bitmap, Pos& tC);
 
 int TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC);
-int getCurrentPiece(ObjC_Bitmap* bitmap, Pos& tC);
+int getCurrentPiece(ObjC_Bitmap* bitmap, Pos tC);
+int GetInitialPiece(ObjC_Bitmap* bitmap, Pos& tC);
 
 int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, int cP);
 void initialize_ColorToPiece();

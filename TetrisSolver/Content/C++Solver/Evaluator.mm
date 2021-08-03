@@ -13,31 +13,38 @@ using namespace std;
 
 
 struct Weights {
-    int height = 10;
-    int height_H2 = -50;
+    int height = -10;
+    int height_H2 = -100;
     int height_Q4 = -500;
-    int holes = -400;
+    int holes = -600;
     int hole_depth = -25;
     int hole_depth_sq = 1;
-    int clears[4] = {-120, -100, -50, 500};
+    int clears[4] = {-100, -70, 10, 400};
     int bumpiness = -24;
     int bumpiness_sq = -7;
-    int max_well_depth = 70;
-    int well_depth = 20;
-    int well_placement[10] = {3, -1, 1, 3, 1, 1, 3, 1, -1, 3};
-    
+    int max_well_depth = 50;
+    int well_depth = 15;
+    int well_placement[10] = {25, -10, 15, 30, 10, 10, 30, 10, -15, 25};
+    int tsdCompleteness[3] = {50, 100, 300};
+    int tspin_filled_rows = 100;
+    int tspin[4] = {-400, 100, 600, 800};
+    int wasted_t = -150;
+    int b2b_bonus = 150;
+    int b2b_break = -150;
 };
 
 Weights weights = Weights();
 
 int Evaluate (Future* future) {
-    
 
+    
     vector<vector<int>>& chart = future->chart;
     
+    TSpin& tspin = future->tspin;
     int maxHeight = -1;
     int holes = 0;
-    int heights[10] = {0,0,0,0,0,0,0,0,0,0};
+    int heights[10] = {0,0,0,0,0,0,0,0,0,0}; // first contact with filled
+    int values[10]  = {0,0,0,0,0,0,0,0,0,0}; // last contact with empty -1
     int wellValue = 0;
     int wellDepth = 21;
     int wellPos = -1;
@@ -49,19 +56,26 @@ int Evaluate (Future* future) {
         for (int y=0; y<20; y++) {
             if (chart[y][x] == 1) {
                 maxHeight = max(maxHeight, 20-y);
-                if (wellDepth > 20 - y) {
-                    wellDepth = 20 - y;
-                    wellPos = x;
-                }
-                heights[x] = 20-y;
-                break;
+                heights[x] = max(heights[x], 20-y);
+            } else {
+                values[x] = min(20-y, values[x]);
             }
         }
     }
+    for (int x=0; x<10; x++) {
+        if (wellDepth > heights[x]) {
+            wellDepth = heights[x];
+            wellPos = x;
+        }
+    }
+
     // checks for holes and covering cells
     for (int x=0; x<10; x++) {
         bool hole = false;
         for (int y=0; y<20; y++) {
+            
+            if (g_findTSpins && x >= tspin.pos.x && x < tspin.pos.x +3 && y == tspin.pos.y +1) continue;
+
             if (y > 0) {
                 if (chart[y][x] == 0 && chart[y-1][x] == 1) {
                     if (!hole) {    //if first hole of column, punishes for every filled cell ontop of it
@@ -76,11 +90,11 @@ int Evaluate (Future* future) {
         }
     }
     // gets well value (how many lines it can clear)
-    int secondDeepestPoint = 21;
+    int clearableHeight = 21;
     for (int x=0; x<10; x++)
         if (x != wellPos)
-            secondDeepestPoint = min(secondDeepestPoint, heights[x]);
-    wellValue = secondDeepestPoint - wellDepth;
+            clearableHeight = min(clearableHeight, values[x]);
+    wellValue = clearableHeight - wellDepth;
     
     int totalDifference = 0;
     int totalDifference_sq = 0;
@@ -103,11 +117,20 @@ int Evaluate (Future* future) {
     score += weights.clears[future->clears];
     score += totalDifference * weights.bumpiness;
     score += totalDifference_sq * weights.bumpiness_sq;
-    score += wellValue * weights.well_depth * weights.well_placement[wellPos];
-    if (wellDepth == 0) score += wellValue * weights.max_well_depth * weights.well_placement[wellPos];
+    if (wellDepth == 0) score += wellValue * weights.max_well_depth + weights.well_placement[wellPos];
+    else  score += wellValue * weights.well_depth + weights.well_placement[wellPos];
     score += cellsCoveringHoles * weights.hole_depth;
     score += cellsCoveringHoles_sq * weights.hole_depth_sq;
     
+    // tspins
+    
+    if (g_findTSpins) {
+        score += weights.tsdCompleteness[tspin.completeness -1];
+        if (future->executedTSpin != -1) score += weights.tspin[(future->executedTSpin)];
+        if (future->piece == 4 && future->executedTSpin == -1) score += weights.wasted_t;
+        score += tspin.filledRows * weights.tspin_filled_rows;
+    }
+
     return score;
 }
 

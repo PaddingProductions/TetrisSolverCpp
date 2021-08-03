@@ -11,10 +11,11 @@
 #import <Foundation/Foundation.h>
 
 @interface ObjC_Instruction : NSObject
--(id) init: (int)x :(int)r :(bool)h;
+-(id) init: (int)x :(int)r :(bool)h :(int) spin;
 -(int) r;
 -(int) x;
 -(bool) hold;
+-(int) spin;
 
 @end
 

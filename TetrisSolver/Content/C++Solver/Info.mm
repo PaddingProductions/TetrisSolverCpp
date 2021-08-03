@@ -14,35 +14,31 @@
 
 using namespace std;
 
-Instruction::Instruction (int _x, int _r) {
+bool g_findTSpins = false;
+
+
+Instruction::Instruction (int _x, int _r, int _spin) {
     x = _x;
     r = _r;
+    spin = _spin;
+    if (spin == -1) spin = _r; 
 }
 
 Future::Future () {}
 Future::Future (const std::vector<std::vector<int>>& c) {
     chart = c;
-    desiredChart.resize(20);
-    for (int y=0; y<20; y++) {
-        desiredChart[y].resize(10);
-        for (int x=0; x<20; x++) {
-            desiredChart[y][x] = 0;
-        }
-    }
 }
 
 TSpin::TSpin() {};
-TSpin::TSpin(Pos& p, int t) {
+TSpin::TSpin(Pos& p, int t, int c) {
     pos = p;
     type = t;
+    completeness = c;
     switch (type / 10) {
         case 2:
             map = TSpinDoubleMaps[type % 10];
-            wells.push_back(p.y);
-            if (type % 10 == 0)
-                wells.push_back(p.y +1);
-            else
-                wells.push_back(p.y -1);
+            if (completeness == kTSDCompleteCondition)
+                complete = true;
     }
 };
 
@@ -72,7 +68,15 @@ Piece::Piece (int _ID, int _x, int _r) {
     centerX = pieceMaps[ID].centerX;
     centerY = pieceMaps[ID].centerY;
 }
-
+Piece::Piece (int _ID, int _x, int _y, int _r) {
+    ID = _ID;
+    r = _r;
+    x = _x;
+    y = _y;
+    map = (pieceMaps[ID].maps) + _r*4*4;
+    centerX = pieceMaps[ID].centerX;
+    centerY = pieceMaps[ID].centerY;
+}
 
 PieceMap::PieceMap (int cX, int cY, const int* maps_) {
     centerX = cX;
@@ -282,13 +286,14 @@ PieceMap pieceMaps[7] = {
 
 
 const int* TSpinDoubleMaps[2] = {TSpinDoubleRMap, TSpinDoubleLMap};
+const int kTSDCompleteCondition = 3;
 const int TSpinDoubleLMap [9] = {
-     1,-1,-1,
-    -1,-1,-1,
-     1,-1, 1,
+    1,0,0,
+    0,0,0,
+    1,0,1
 };
 const int TSpinDoubleRMap [9] {
-    -1,-1, 1,
-    -1,-1,-1,
-     1,-1, 1,
+    0,0,1,
+    0,0,0,
+    1,0,1
 };

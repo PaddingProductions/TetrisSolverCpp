@@ -10,6 +10,8 @@
 #include "Info.h"
 #include <vector>
 
-Future TetrisSolver (const std::vector<std::vector<int>>& chart, int piece, int holdPiece);
+Future Solver (const std::vector<std::vector<int>>& chart, int piece, int holdPiece);
+Future Test_Solver (const std::vector<std::vector<int>>& chart, int piece, int hold);
+std::vector<std::vector<int>> Test_Evaluator (const std::vector<std::vector<int>>& chart);
 
 #endif /* Solver_h */

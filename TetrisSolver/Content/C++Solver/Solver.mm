@@ -14,6 +14,8 @@
 #include "Instruction.h"
 #include "Solver.h"
 #include "Evaluator.h"
+#include "T-Spin.h"
+
 using namespace std;
 
 
@@ -26,7 +28,6 @@ void printChart (const vector<vector<int>>& chart) {
             else
                 str += ". ";
         }
-        NSLog(@"%s", str.c_str());
     }
 }
 
@@ -94,69 +95,13 @@ int clear (vector<vector<int>>& chart) {
     return clears;
 }
 
-int AssessTSpinPos (const vector<vector<int>>& chart, const int* map, int pX, int pY, int w, int h)  {
-    int completeness = 0;
-    for  (int y=0; y<h; y++) {
-        for  (int x=0; x<w; x++) {  // for all nodes
-            int cY = pY +y;
-            int cX = pX +x;
-            
-            if (cY >= 20 || cX >= 10 || cY < 0 || cX < 0) return -1;
-            
-            if (map[y*w + x] == 1) {
-                if (chart[cY][cX] == 1) completeness ++;
-            } else {
-                if (chart[cY][cX] == 1) return -1;
-            }
-        }
-    }
-    return completeness;
-}
-
-void FindBestTsd (Future* future) {
-    
-    TSpin best = TSpin();
-    int bestScore = -2;
-    
-    for (int i=0; i<2; i++) {
-        const int* map = TSpinDoubleMaps[i];
-        for (int x=1; x<7; x++) { // other postions are impossible
-            int y = 0;
-            int score = 0;
-            while (score != -1 && y < 20) {
-                score = AssessTSpinPos(future->chart, map, x, y, 3, 3);
-                
-                if (score > bestScore ) {
-                    bestScore = score;
-                    Pos pos = Pos(x,y);
-                    int type = 20 + i;
-                    best = TSpin(pos, type);
-                }
-                y ++;
-            }
-        }
-    }
-
-    const int* map = best.map;
-    for  (int y=0; y<3; y++) {
-        for  (int x=0; x<3; x++) {  // for all nodes
-            int cX = best.pos.x +x;
-            int cY = best.pos.y +y;
-            
-            if (map[y*3 + x] == -1) future->desiredChart[cY][cX] = -1;
-        }
-    }
-    
-    for (auto it = best.wells.begin(); it != best.wells.end(); it++){
-        for (int y=0; y<20; y++) {
-            
-        }
-    }}
-
 void predict (Future* list, const vector<vector<int>>& chart, int pieceID) {
     
     int size = 40;
-    for (int i=0; i<size; i++) list[i] = Future(chart);
+    for (int i=0; i<size; i++) {
+        list[i] = Future(chart);
+        list[i].piece = pieceID;
+    }
     
     for (int r=0; r<4; r++) {
         for (int x=0; x<10; x++) {
@@ -171,21 +116,43 @@ void predict (Future* list, const vector<vector<int>>& chart, int pieceID) {
             }
             list[i].clears = clear(list[i].chart);
             list[i].instruction = Instruction(x,r);
+            if (g_findTSpins) list[i].tspin = FindBestTsd(&list[i]);
         }
     }
 }
 
 Future solve (const vector<vector<int>>& chart, int piece, int hold) {
     
-    Future children[80];
+    Future children[81];
     predict(children, chart, piece);
     predict(&children[40], chart, hold);
-    for (int i=0; i<40; i++)  {
+    for (int i=0; i<40; i++)  
         children[40+i].instruction.hold = true;
-        children[40+i].holdPiece = piece;
-    }
+    
+    
 
-    for (int i=0; i < 80; i++) {
+    // define children #81, the one that executes the tspin.
+    {
+        children[80] = Future(chart);
+        children[80].tspin = FindBestTsd(&children[80]);
+
+        
+        if (g_findTSpins && (piece == 4 || hold == 4) && children[80].tspin.complete) {
+            TSpin& tspin = children[80].tspin;
+            Piece piece_o = Piece(piece, tspin.pos.x +1, tspin.pos.y+1, 2);
+                
+            addToChart(children[80].chart, piece_o);
+            children[80].clears = clear(children[80].chart);
+            children[80].instruction = Instruction(tspin.pos.x +1, 1+ (2* (tspin.type %10 == 0)), 2);
+            if (hold == 4) children[80].instruction.hold = true; // if the T is the held piece
+            children[80].executedTSpin = children[80].clears;
+        
+        } else
+            children[80].impossible = true;
+        
+    }
+    
+    for (int i=0; i < 81; i++) {
         if (children[i].impossible) continue;
         children[i].score = Evaluate(&children[i]);
     }
@@ -194,7 +161,7 @@ Future solve (const vector<vector<int>>& chart, int piece, int hold) {
     int highestScore = 0;  // highest score
     int best = -1;    // index of best future 
     
-    for (int i=0; i < 80; i++) {
+    for (int i=0; i < 81; i++) {
         if (children[i].impossible) continue;
         if (children[i].score > highestScore || best == -1) {
             highestScore = children[i].score;
@@ -207,11 +174,10 @@ Future solve (const vector<vector<int>>& chart, int piece, int hold) {
     return children[best];
 }
 
-Future TetrisSolver (const vector<vector<int>>& chart, int piece, int hold) {
+Future Solver (const vector<vector<int>>& chart, int piece, int hold) {
 
     NSDate *start = [NSDate date];
     
-    //FindBestTsd(chart);
     Future result = solve(chart, piece, hold);
     
     printChart(result.chart);
@@ -220,4 +186,66 @@ Future TetrisSolver (const vector<vector<int>>& chart, int piece, int hold) {
     NSLog(@" ---- time consumed: %f", timeInterval);
 
     return result;
+}
+
+Future Test_Solver (const vector<vector<int>>& chart, int piece, int hold) {
+    
+    Future result = solve(chart, piece, hold);
+    
+    return result;
+}
+
+vector<vector<int>> Test_Evaluator (const vector<vector<int>>& in_chart) {
+    
+    Future future = Future(in_chart);
+    
+    // 4 = hole, 2 = well, 3 = tspin (expected)
+    vector<vector<int>>& chart = future.chart;
+
+    TSpin tsd = FindBestTsd(&future);
+    int wellDepth = 21;
+    int wellPos = -1;
+    int heights[10] = {0,0,0,0,0,0,0,0,0,0};
+    
+    // gets hieght and well pos (if well exists)
+    for (int x=0; x<10; x++)
+        for (int y=0; y<20; y++)
+            if (chart[y][x]) {
+                heights[x] = 20-y;
+                break;
+            }
+    wellDepth = 21;
+    wellPos = -1;
+    for (int x=0; x<10; x++)
+        if (wellDepth > heights[x]) {
+            wellDepth = heights[x];
+            wellPos = x;
+        }
+    chart[19 - wellDepth][wellPos] = 2;
+    
+    // checks for holes and covering cells
+    for (int x=0; x<10; x++) {
+
+        bool hole = false;
+        for (int y=0; y<20; y++) {
+            
+            if (x >= tsd.pos.x && x < tsd.pos.x +3 && y == tsd.pos.y +1) continue;
+            if (y > 0) {
+                if (chart[y][x] == 0 && chart[y-1][x]) {
+                    if (!hole) {    //if first hole of column, punishes for every filled cell ontop of it
+                        hole = true;
+                        chart[y][x] = 4;
+                    }
+                }
+            }
+        }
+    }
+    
+    for (int y=0; y<3; y++)
+        for (int x=0; x<3; x++)
+            if (tsd.map[y*3 +x])
+                chart[tsd.pos.y +y][tsd.pos.x +x] = 3;
+
+
+    return future.chart;
 }
