@@ -52,15 +52,33 @@ uint32_t shadowColor[7] = {
     0x17506cff  //O
 };
 
+bool ColorCompare(uint32_t c1, uint32_t c2, int range) {
+    int c1r = (c1 >> 8) & 0xFF;
+    int c1g = (c1 >> 16) & 0xFF;
+    int c1b = (c1 >> 24) & 0xFF;
+
+    int c2r = (c2 >> 8) & 0xFF;
+    int c2g = (c2 >> 16) & 0xFF;
+    int c2b = (c2 >> 24) & 0xFF;
+    
+    if (abs(c1r - c2r) >= range) return false;
+    if (abs(c1g - c2g) >= range) return false;
+    if (abs(c1b - c2b) >= range) return false;
+    
+    return true;
+}
+
+
+
 Pos TetrisGetTopCorner (ObjC_Bitmap* bitmap)  {
-    Pos pos = Pos(0, int([bitmap height]) / 2);
+    Pos pos = Pos(50, int([bitmap height]) / 2);
     uint32_t color = [bitmap getValue:pos.x :pos.y];
     
-    while (color == black) {
+    while (ColorCompare(color, black, 3)) {
         pos.x ++;
         color = [bitmap getValue:pos.x :pos.y];
     }
-    while (color !=black)  {
+    while (!ColorCompare(color, black, 3))  {
         pos.y --;
         color = [bitmap getValue:pos.x :pos.y];
     }
@@ -88,13 +106,13 @@ Pos TetrisGetPreviewCorner (ObjC_Bitmap* bitmap, Pos& tC) {
     pos.y += blockSize;
     uint32_t c1 = 0;
     uint32_t c2 = 0;
-    while (c1 == black && c2 == black) {  // two-column scan for block
+    while (ColorCompare(c1,black,3) && ColorCompare(c2,black,3)) {  // two-column scan for block
         c1 = [bitmap getValue:pos.x :pos.y];
         c2 = [bitmap getValue:pos.x :(pos.y + blockSize)];
         
         pos.x ++;
     }
-    if (ColorToPiece[c2] == 6)
+    if (ColorCompare(c2, PieceToColor[6], 10))
         pos.x -= CGFloat(blockSize);
     
     return pos;
@@ -105,8 +123,9 @@ int TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC) {
         for (int x=0; x<4; x++) {
             uint32_t color = [bitmap getValue: refC.x + x*blockSize +10 :refC.y + y*blockSize +10];
             
-            if (ColorToPiece.count(color))
-                return ColorToPiece[color];
+            for (int i=0; i<7; i++)
+                if (ColorCompare(color, PieceToColor[i], 10))
+                    return i;
         }
     }
     return -1;
@@ -115,11 +134,12 @@ int TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC) {
 int GetInitialPiece (ObjC_Bitmap* bitmap, Pos& tC) {
 
     for (int y=0; y<20; y++) {
-        for (int x=0; x<10; x++) {
+        for (int x=3; x<7; x++) {
             uint32_t color = [bitmap getValue :tC.x +x*blockSize +10 :tC.y + y*blockSize +10];
 
-            if (ColorToPiece.count(color))
-                return ColorToPiece[color];
+            for (int i=0; i<7; i++)
+                if (ColorCompare(color, PieceToColor[i], 10))
+                    return i;
         }
     }
 
@@ -131,8 +151,9 @@ int getCurrentPiece(ObjC_Bitmap* bitmap, Pos pos) {
         for (int x=3; x<7; x++) {
             uint32_t color = [bitmap getValue:pos.x + x*blockSize +10 :pos.y + y*blockSize +10];
             
-            if (ColorToPiece.count(color))
-                return ColorToPiece[color];
+            for (int i=0; i<7; i++)
+                if (ColorCompare(color, PieceToColor[i], 10))
+                    return i;
         }
     }
 
@@ -147,11 +168,11 @@ int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, int cP) {
     pos.y += y * blockSize  + 10;
     uint32_t color = [bitmap getValue:pos.x :pos.y];
     
-    if (color == shadowColor[cP])
+    if (ColorCompare(color, shadowColor[cP], 10))
         return 0;
-    if (color == grey)
+    if (ColorCompare(color, grey, 10))
         return -1;
-    if (color != black) {
+    if (!ColorCompare(color, black, 10)) {
         return 1;
     }
     
