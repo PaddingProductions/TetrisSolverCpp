@@ -22,11 +22,11 @@ struct ScreenView: View {
     let delay: Int;
     
     @State var findTSpins = false;
-    
+    @State var opener_4w = false;
+
     init (targetWindow: TargetWindow) {
         
         self.delay = Int( max( 100000.0, ((1/speed) * 1000000) ) )
-        print(Int( max( 100000.0, ((1/speed) * 1000000) ) ))
         self.targetWindow = targetWindow
         let screenImage: CGImage? = targetWindow.captureImage()
         let bitmap = ObjC_Bitmap(screenImage!)
@@ -132,26 +132,37 @@ struct ScreenView: View {
                                 m_solver!.update(screenBitmap!)
                             }
                         }
-                    
-                        Button("Test Solver") {
-                            
-                            if (evaluatorTestInput.piece == -1) {
-                                print(" ---- no piece set")
-                                }
-                            evaluatorTestOutput.chart = m_solver!.testSolver(
-                                evaluatorTestInput.chart,
-                                piece: Int32(evaluatorTestInput.piece)
-                            );
+                        Button("Continue") {
+                            LClick (pos: CGPoint(x: targetWindow.pos.x + 10, y: targetWindow.pos.y + 10))
+
+                            while (!m_solver!.reset(screenBitmap!)) {
+                                self.update()
+                                usleep(100)
+                            }
+                            var start = DispatchTime.now();
+                            for _ in 0..<7 {
+                                let instruction = TetrisInstruction(source: m_solver!.solve()!)
+                                instruction.execute()
+                                
+                                let end = DispatchTime.now();
+                                
+                                let microTime: Int = Int((end.uptimeNanoseconds - start.uptimeNanoseconds) / 1000)
+                                usleep( useconds_t(max( 1, delay - microTime )) )
+                                
+                                start = DispatchTime.now();
+                                self.update()
+                                m_solver!.update(screenBitmap!)
+                            }
                         }
-                        Button("Test Evaluator") {
-                            evaluatorTestOutput.chart = m_solver!.testEvaluator( evaluatorTestInput.chart );
-                        }
-                        
                         Toggle(isOn: $findTSpins) {
-                            Text("Enable T-Spin Finder").bold()
+                            Text("Enable T-Spin Finder")
+                        }
+                        Toggle(isOn: $opener_4w) {
+                            Text("Enable 4w opener")
                         }
                         Button("Set Settings") {
-                            m_solver!.set_FindTspins( self.findTSpins )
+                            m_solver!.set_FindTspins(findTSpins);
+                            m_solver!.set_4w(findTSpins);
                         }
                     }
                 }

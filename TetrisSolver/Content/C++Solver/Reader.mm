@@ -53,7 +53,7 @@ uint32_t shadowColor[7] = {
 };
 
 Pos TetrisGetTopCorner (ObjC_Bitmap* bitmap)  {
-    Pos pos = Pos(0, [bitmap height] / 2);
+    Pos pos = Pos(0, int([bitmap height]) / 2);
     uint32_t color = [bitmap getValue:pos.x :pos.y];
     
     while (color == black) {
@@ -127,12 +127,13 @@ int GetInitialPiece (ObjC_Bitmap* bitmap, Pos& tC) {
 }
 int getCurrentPiece(ObjC_Bitmap* bitmap, Pos pos) {
 
-    pos.x +=4*blockSize;
     for (int y=0; y<20; y++) {
-        uint32_t color = [bitmap getValue:pos.x +10 :pos.y + y*blockSize +10];
-        
-        if (ColorToPiece.count(color))
-            return ColorToPiece[color];
+        for (int x=3; x<7; x++) {
+            uint32_t color = [bitmap getValue:pos.x + x*blockSize +10 :pos.y + y*blockSize +10];
+            
+            if (ColorToPiece.count(color))
+                return ColorToPiece[color];
+        }
     }
 
     return -1;

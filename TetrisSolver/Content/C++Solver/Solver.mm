@@ -13,13 +13,19 @@
 #include "Info.h"
 #include "Instruction.h"
 #include "Solver.h"
-#include "Evaluator.h"
 #include "T-Spin.h"
 
 using namespace std;
 
+void Solver::reset () {
+    _4w_wellPos = -1;
+    _4w_seedDirect = -1;
+    _4w_building = true;
+    _4w_seedPlaced = false;
+    m_finished_4w = false;
+}
 
-void printChart (const vector<vector<int>>& chart) {
+void Solver::printChart (const vector<vector<int>>& chart) {
     for (int y=0; y<20; y++) {
         string str;
         for (int x=0; x<10; x++) {
@@ -28,54 +34,48 @@ void printChart (const vector<vector<int>>& chart) {
             else
                 str += ". ";
         }
+        NSLog(@"%@", @(str.c_str()));
     }
 }
 
-bool addToChart (vector<vector<int>>& chart, Piece& piece) {
+void Solver::addToChart (vector<vector<int>>& chart, Piece* piece) {
     
-    for  (int y=0; y<4; y++) {
-        for (int x=0; x<4; x++) {  // for all nodes
-            int currX = piece.x + x - piece.centerX;
-            int currY = piece.y + y - piece.centerY;
+    for  (int y=0; y<piece->size; y++) {
+        for (int x=0; x<piece->size; x++) {  // for all nodes
+            int currX = piece->x - piece->center + x;
+            int currY = piece->y - piece->center + y;
             
-            if (currX < 0 || currY < 0 || currX >= 10 || currY >= 20) {
-                if (piece.map[y*4 +x] == 1)
-                    return false;
-                else
-                    continue;
-            }
-            if (piece.map[y*4 +x] == 1)
+            if (piece->map[y*piece->size +x] == 1)
                 chart[currY][currX] = 1;
         }
     }
-    return true;
 }
 
-bool checkOverlap (const vector<vector<int>>& chart, Piece& piece) {
-    for  (int y=0; y<4; y++) {
-        for  (int x=0; x<4; x++) {  // for all nodes
+bool Solver::isValid (const vector<vector<int>>& chart, Piece* piece, bool ignoreTop) {
+    for  (int y=0; y<piece->size; y++) {
+        for (int x=0; x<piece->size; x++) {
             
-            if (piece.map[y*4 + x] == 0) continue; // no need to process empty nodes
+            if (piece->map[y*piece->size + x] == 0) continue; // no need to process empty nodes
         
-            int currX = piece.x + x - piece.centerX;
-            int currY = piece.y + y - piece.centerY;
+            int currX = piece->x - piece->center + x;
+            int currY = piece->y - piece->center + y;
 
-            if (currY < 0)  continue;  // if out of bounds on top, which can be ignored
             if (currX < 0 || currX >= 10 || currY >= 20) return false;
+            if (currY < 0) { if (ignoreTop) { continue; } else {return false;} }
             if (chart[currY][currX] == 1) return false;
         }
     }
     return true;
 }
 
-void findDropLocation (const vector<vector<int>>& chart, Piece& piece) {
-    
-    while (checkOverlap(chart, piece))
-        piece.y ++;
-    piece.y --;
+void Solver::findDropLocation (const vector<vector<int>>& chart, Piece* piece) {
+    do {
+        piece->y ++;
+    } while (isValid(chart, piece, true));
+    piece->y --;
 }
 
-int clear (vector<vector<int>>& chart) {
+int Solver::clear (vector<vector<int>>& chart) {
     int clears = 0;
     for (int y=0; y<20; y++){
         bool clear = true;
@@ -95,157 +95,137 @@ int clear (vector<vector<int>>& chart) {
     return clears;
 }
 
-void predict (Future* list, const vector<vector<int>>& chart, int pieceID) {
+bool Solver::_3CornerCheck(vector<vector<int>>& chart, Piece* piece) {
     
-    int size = 40;
-    for (int i=0; i<size; i++) {
-        list[i] = Future(chart);
-        list[i].piece = pieceID;
-    }
-    
-    for (int r=0; r<4; r++) {
-        for (int x=0; x<10; x++) {
-            int i = r * 10 + x;
-            
-            Piece piece = Piece(pieceID, x, r);
-            findDropLocation(chart, piece);
-            
-            if (!addToChart(list[i].chart, piece)) {
-                list[i].impossible = true;
-                continue;
-            }
-            list[i].clears = clear(list[i].chart);
-            list[i].instruction = Instruction(x,r);
-            if (g_findTSpins) list[i].tspin = FindBestTsd(&list[i]);
-        }
-    }
+    int cnt = 0;
+    if (piece->x > 0 && piece->y > 0) cnt += chart[piece->x -1][piece->y-1]; else cnt ++;
+    if (piece->x > 0 && piece->y < 19) cnt += chart[piece->x -1][piece->y+1]; else cnt ++;
+    if (piece->x < 9 && piece->y < 19) cnt += chart[piece->x +1][piece->y+1]; else cnt ++;
+    if (piece->x < 9 && piece->y > 0) cnt += chart[piece->x +1][piece->y-1]; else cnt ++;
+
+    return cnt >= 3;
 }
 
-Future solve (const vector<vector<int>>& chart, int piece, int hold) {
+Future Solver::ApplyPiece (const Field* field, Piece* piece, int ID, int x, int base_r, int spin_r) {
+      
+    Future future = Future(field);
+    *piece = Piece(ID, pieceInitialPos);
+    Spin(&future, piece, base_r);
+    piece->x += x - pieceInitialPos;
     
-    Future children[81];
-    predict(children, chart, piece);
-    predict(&children[40], chart, hold);
-    for (int i=0; i<40; i++)  
-        children[40+i].instruction.hold = true;
-    
-    
+    findDropLocation(future.chart, piece);
+    Spin(&future, piece, spin_r);
+    findDropLocation(future.chart, piece);
 
-    // define children #81, the one that executes the tspin.
-    {
-        children[80] = Future(chart);
-        children[80].tspin = FindBestTsd(&children[80]);
+    if (!isValid(future.chart, piece)) {
+        future.impossible = true;
+        return future;
+    }
+    addToChart(future.chart, piece);
+    future.clears = clear(future.chart);
+    
+    if (g_findTSpins) future.tspin = FindBestTsd(&future);
+    
+    if (piece->ID == 4) // if T
+        if (piece->r == spin_r && spin_r != base_r) // if spun && sucessful
+            if (_3CornerCheck(future.chart, piece)) // 3 corner rule
+                future.executedTSpin = future.clears;
+    
+    
+    if (future.clears != 0) future.combo ++;
+    else future.combo = 0;
+    
+    if (future.clears == 4 || future.executedTSpin != -1) future.b2b ++;
+    else future.b2b = 0;
+    
+    return future;
+}
 
+int Solver::GenerateFutures (vector<Future>& futures, const Field* field, int pieceID, int startAt) {
+    
+    // NOTE:
+    // piece.x != instruction.x
+    // this is because a kick may change the piece's x position
+    
+    int i = startAt;
+    for (int x=0; x<10; x++) {
+        Piece base_pieces[4];
         
-        if (g_findTSpins && (piece == 4 || hold == 4) && children[80].tspin.complete) {
-            TSpin& tspin = children[80].tspin;
-            Piece piece_o = Piece(piece, tspin.pos.x +1, tspin.pos.y+1, 2);
+        for (int r=0; r<4; r++) {
+            Future future = ApplyPiece(field, &(base_pieces[r]), pieceID, x, r, r);
+            future.instruction = Instruction(x, r, r);
+            
+            if (future.impossible) continue;
+            futures[i++] = future;
+        }
+        if (pieceID == 5) continue;
+        
+        for (int r=0; r<4; r++) {
+            for (int s=0; s<4; s++) {
+                if (s == r) continue;
+            
+                Piece piece = Piece();
+                Future future = ApplyPiece(field, &piece, pieceID, x, r, s);
+                future.instruction = Instruction(x, r, s);
                 
-            addToChart(children[80].chart, piece_o);
-            children[80].clears = clear(children[80].chart);
-            children[80].instruction = Instruction(tspin.pos.x +1, 1+ (2* (tspin.type %10 == 0)), 2);
-            if (hold == 4) children[80].instruction.hold = true; // if the T is the held piece
-            children[80].executedTSpin = children[80].clears;
-        
-        } else
-            children[80].impossible = true;
-        
+                // check if redundant (same as without spin)
+                if (piece.x == base_pieces[s].x && piece.y == base_pieces[s].y) continue;
+                if (future.impossible) continue;
+                futures[i++] = future;
+            }
+        }
+    }
+    return i;
+}
+
+Future Solver::solve (const Field* field) {
+    
+    int size = 120;
+    vector<Future> futures;
+    futures.resize(2 * size);
+    
+    int end1 = GenerateFutures(futures, field, field->piece, 0);
+    int end2 = GenerateFutures(futures, field, field->hold, end1);
+    for (int i = end1; i < end2; i++)
+        futures[i].instruction.hold = true;
+    futures.resize(end2);
+
+    for (int i=0; i < futures.size(); i++) {
+        if (futures[i].impossible) continue;
+        futures[i].score = Evaluate(&futures[i]);
     }
     
-    for (int i=0; i < 81; i++) {
-        if (children[i].impossible) continue;
-        children[i].score = Evaluate(&children[i]);
-    }
-
     
     int highestScore = 0;  // highest score
     int best = -1;    // index of best future 
     
-    for (int i=0; i < 81; i++) {
-        if (children[i].impossible) continue;
-        if (children[i].score > highestScore || best == -1) {
-            highestScore = children[i].score;
+    for (int i=0; i < futures.size(); i++) {
+        if (futures[i].impossible) continue;
+        if (futures[i].score > highestScore || best == -1) {
+            highestScore = futures[i].score;
             best = i;
         }
     }
+    
     if (best == -1)
         NSLog(@"Error, no valid solutions.");
     
-    return children[best];
+    return futures[best];
 }
 
-Future Solver (const vector<vector<int>>& chart, int piece, int hold) {
+Future Solver::Solve (const Field* field) {
 
     NSDate *start = [NSDate date];
     
-    Future result = solve(chart, piece, hold);
+    Future result = Future();
+    
+    result = solve(field);
+    
     
     printChart(result.chart);
     NSTimeInterval timeInterval = [start timeIntervalSinceNow];
-    NSLog(@" ---- piece: %c", PieceNames[piece]);//, PieceNames[pieces[1]]);
+    NSLog(@" ---- piece: %c, %c", PieceNames[field->piece], PieceNames[field->hold]);
     NSLog(@" ---- time consumed: %f", timeInterval);
-
-    return result;
-}
-
-Future Test_Solver (const vector<vector<int>>& chart, int piece, int hold) {
-    
-    Future result = solve(chart, piece, hold);
     
     return result;
-}
-
-vector<vector<int>> Test_Evaluator (const vector<vector<int>>& in_chart) {
-    
-    Future future = Future(in_chart);
-    
-    // 4 = hole, 2 = well, 3 = tspin (expected)
-    vector<vector<int>>& chart = future.chart;
-
-    TSpin tsd = FindBestTsd(&future);
-    int wellDepth = 21;
-    int wellPos = -1;
-    int heights[10] = {0,0,0,0,0,0,0,0,0,0};
-    
-    // gets hieght and well pos (if well exists)
-    for (int x=0; x<10; x++)
-        for (int y=0; y<20; y++)
-            if (chart[y][x]) {
-                heights[x] = 20-y;
-                break;
-            }
-    wellDepth = 21;
-    wellPos = -1;
-    for (int x=0; x<10; x++)
-        if (wellDepth > heights[x]) {
-            wellDepth = heights[x];
-            wellPos = x;
-        }
-    chart[19 - wellDepth][wellPos] = 2;
-    
-    // checks for holes and covering cells
-    for (int x=0; x<10; x++) {
-
-        bool hole = false;
-        for (int y=0; y<20; y++) {
-            
-            if (x >= tsd.pos.x && x < tsd.pos.x +3 && y == tsd.pos.y +1) continue;
-            if (y > 0) {
-                if (chart[y][x] == 0 && chart[y-1][x]) {
-                    if (!hole) {    //if first hole of column, punishes for every filled cell ontop of it
-                        hole = true;
-                        chart[y][x] = 4;
-                    }
-                }
-            }
-        }
-    }
-    
-    for (int y=0; y<3; y++)
-        for (int x=0; x<3; x++)
-            if (tsd.map[y*3 +x])
-                chart[tsd.pos.y +y][tsd.pos.x +x] = 3;
-
-
-    return future.chart;
 }

@@ -12,6 +12,7 @@
 		144147EA269A0E7A00922E0D /* ScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144147E8269A0E7A00922E0D /* ScreenView.swift */; };
 		14454CD1268E83F400D15D76 /* Bitmap.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14454CD0268E83F400D15D76 /* Bitmap.mm */; };
 		14454CEC268EBFE700D15D76 /* Instruction.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14454CEB268EBFE700D15D76 /* Instruction.mm */; };
+		1445C06226BB9DDA0015C59F /* 4W.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1445C06126BB9DDA0015C59F /* 4W.mm */; };
 		145EAAB526AC7F4D005753C6 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145EAAB426AC7F4D005753C6 /* Color.swift */; };
 		14826A0C2692A37800C6948C /* Coordinator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14BAD5AA268D79FD002AF2A2 /* Coordinator.mm */; };
 		14826A102692A37B00C6948C /* Solver.mm in Sources */ = {isa = PBXBuildFile; fileRef = 147BCB1B269277B8005C1254 /* Solver.mm */; };
@@ -28,6 +29,7 @@
 		149BBE34267C413E00530635 /* KeyCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149BBE33267C413E00530635 /* KeyCodes.swift */; };
 		14A0074226ABBD1E00C3173D /* EvaluatorTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14A0074126ABBD1E00C3173D /* EvaluatorTestView.swift */; };
 		14C087CD26B4F37B00BC0BE6 /* T-Spin.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14C087CC26B4F37B00BC0BE6 /* T-Spin.mm */; };
+		14C6EC0326BF80CD00D82969 /* SRS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14C6EC0226BF80CD00D82969 /* SRS.mm */; };
 		14CB5394265DF32700592B94 /* WindowSelector .swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CB5393265DF32700592B94 /* WindowSelector .swift */; };
 		14D8F65826A7DF530080719C /* Evaluator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14D8F65726A7DF530080719C /* Evaluator.mm */; };
 /* End PBXBuildFile section */
@@ -60,6 +62,7 @@
 		14454CEB268EBFE700D15D76 /* Instruction.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Instruction.mm; sourceTree = "<group>"; };
 		14454CF6268FF63000D15D76 /* Info.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Info.mm; sourceTree = "<group>"; };
 		14454CFA26916D2100D15D76 /* Reader.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Reader.mm; sourceTree = "<group>"; };
+		1445C06126BB9DDA0015C59F /* 4W.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = 4W.mm; sourceTree = "<group>"; };
 		145EAAB426AC7F4D005753C6 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		147BCB1B269277B8005C1254 /* Solver.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Solver.mm; sourceTree = "<group>"; };
 		147BCB25269282D7005C1254 /* Info.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Info.h; sourceTree = "<group>"; };
@@ -86,8 +89,8 @@
 		14BAD5AA268D79FD002AF2A2 /* Coordinator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Coordinator.mm; sourceTree = "<group>"; };
 		14C087CB26B4F37000BC0BE6 /* T-Spin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "T-Spin.h"; sourceTree = "<group>"; };
 		14C087CC26B4F37B00BC0BE6 /* T-Spin.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = "T-Spin.mm"; sourceTree = "<group>"; };
+		14C6EC0226BF80CD00D82969 /* SRS.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SRS.mm; sourceTree = "<group>"; };
 		14CB5393265DF32700592B94 /* WindowSelector .swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowSelector .swift"; sourceTree = "<group>"; };
-		14D8F65626A7DF350080719C /* Evaluator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Evaluator.h; sourceTree = "<group>"; };
 		14D8F65726A7DF530080719C /* Evaluator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Evaluator.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -221,8 +224,9 @@
 				14BAD5AA268D79FD002AF2A2 /* Coordinator.mm */,
 				147BCB29269283A1005C1254 /* Solver.h */,
 				147BCB1B269277B8005C1254 /* Solver.mm */,
-				14D8F65626A7DF350080719C /* Evaluator.h */,
 				14D8F65726A7DF530080719C /* Evaluator.mm */,
+				1445C06126BB9DDA0015C59F /* 4W.mm */,
+				14C6EC0226BF80CD00D82969 /* SRS.mm */,
 				14C087CB26B4F37000BC0BE6 /* T-Spin.h */,
 				14C087CC26B4F37B00BC0BE6 /* T-Spin.mm */,
 				147BCB2A269283B2005C1254 /* Reader.h */,
@@ -362,6 +366,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				14C6EC0326BF80CD00D82969 /* SRS.mm in Sources */,
 				14C087CD26B4F37B00BC0BE6 /* T-Spin.mm in Sources */,
 				144147E9269A0E7A00922E0D /* Title.swift in Sources */,
 				149BBE29267C3FAE00530635 /* KeyPresser.swift in Sources */,
@@ -380,6 +385,7 @@
 				149AD301264B803F00703C9B /* TargetWindow.swift in Sources */,
 				149BBE34267C413E00530635 /* KeyCodes.swift in Sources */,
 				14454CEC268EBFE700D15D76 /* Instruction.mm in Sources */,
+				1445C06226BB9DDA0015C59F /* 4W.mm in Sources */,
 				149BBE2E267C401A00530635 /* Clicker.swift in Sources */,
 				14826A0C2692A37800C6948C /* Coordinator.mm in Sources */,
 			);

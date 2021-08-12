@@ -10,6 +10,7 @@ import Foundation
 struct TetrisInstruction {
     init () {}
     init (source: ObjC_Instruction) {
+        
         var instruction: [CGKeyCode] = []
         if source.hold() {
             instruction.append(Keycode.c)
@@ -27,26 +28,35 @@ struct TetrisInstruction {
                 instruction.append(Keycode.rightArrow)
             }
         }
+        print("x: \(source.x())")
+        print("r: \(source.r())")
         if (source.spin() != source.r()) {
             instruction.append(Keycode.downArrow);
             
-            if (source.r() - source.spin() == -1) {
+            if ((source.r() + 1) % 4 == source.spin()) {
                 instruction.append(Keycode.upArrow);
             }
-            if (source.r() - source.spin() == 1) {
+            if ((source.r() + 2) % 4 == source.spin()) {
+                instruction.append(Keycode.s);
+            }
+            if ((source.r() + 3) % 4 == source.spin()) {
                 instruction.append(Keycode.z);
             }
+            print("spun: \(source.r()) -> \(source.spin())")
         }
+        
         instruction.append(Keycode.space)
         
         self.instruction = instruction
     }
     
+    
     func execute () {
         for key in instruction {
             var hold = 100;
             if (key == Keycode.downArrow) {
-                hold = 40000;
+                hold = 40000 //40000
+                g_spun = true;
             }
             PressKey(key: key, hold: hold)
         }
@@ -54,5 +64,5 @@ struct TetrisInstruction {
     var instruction: [CGKeyCode] = []
 }
 
-
+var g_spun = false;
 let pieceInitialPosition: Int = 4

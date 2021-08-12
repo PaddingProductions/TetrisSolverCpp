@@ -12,18 +12,18 @@
 {
     int m_x;
     int m_r;
-    int m_h;
+    bool m_h;
     int m_s;
 }
 
-- (id) init: (int)x :(int)r :(bool)h :(int)s {
+- (id) init: (int)x :(int)r :(bool)h :(int)spin {
     self = [super init];
     if (self) {
         
         m_r = r;
         m_x = x;
         m_h = h;
-        m_s = s;
+        m_s = spin;
     }
     return self;
 }

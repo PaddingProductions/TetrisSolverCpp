@@ -21,9 +21,8 @@
 -(bool) reset: (ObjC_Bitmap*) bitmap;
 -(bool) gameOver;
 -(void) set_FindTspins :(bool) input;
--(NSString*) testSolver: (NSString*) STRchart piece: (int)piece;
--(NSString*) testEvaluator: (NSString*) STRchart;
- 
+-(void) set_4w :(bool) input;
+
 @end
 
 #endif /* Coordinator_h */

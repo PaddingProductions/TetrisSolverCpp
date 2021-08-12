@@ -15,16 +15,17 @@
 extern char PieceNames[7];
 
 struct Pos {
+    Pos ();
     Pos (int _x, int _y);
-    int x;
-    int y;
+    int x = 0;
+    int y = 0;
 };
 
 struct Instruction {
-    Instruction (int _x, int _r, int _spin = -1);
+    Instruction (int _x, int _r, int _spin);
     int x;
     int r;
-    int spin = 0;
+    int spin;
     bool hold = false;
 };
 
@@ -39,36 +40,54 @@ struct TSpin {
     const int* map;
 };
 
+struct Field {
+    Field ();
+    void update (const std::vector<std::vector<int>>& _chart, int _combo, int _b2b );
+    std::vector<std::vector<int>> chart;
+    bool impossible = false;
+    int piece = -1;
+    int hold = -1;
+    int b2b = 0;
+    int combo = 0;
+    TSpin tspin = TSpin();
+};
+
+
 struct Future {
     Future ();
-    Future (const std::vector<std::vector<int>>& chart);
+    Future (const Field* field);
     std::vector<std::vector<int>> chart;
-    Instruction instruction = Instruction(0,0);
+    Instruction instruction = Instruction(0,0,0);
     bool impossible = false;
     int clears = 0;
     int score = 0;
     int executedTSpin = -1;
     int piece = -1;
+    int b2b;
+    int combo;
+    int _4w_value = 22;
     TSpin tspin = TSpin();
 };
 
 
+
 struct Piece {
-    Piece (int _ID, int _x, int _r);
+    Piece ();
+    Piece (int _ID, int _x);
     Piece (int _ID, int _x, int _y, int _r);
-    int ID;
-    int r;
-    int x;
-    int y;
-    const int* map;
-    int centerX;
-    int centerY;
+    int ID = -1;
+    int r = 0;
+    int x = 0;
+    int y = 0;
+    const int* map = nullptr;
+    int center = 0;
+    int size = 0;
 };
 
 struct PieceMap {
-    PieceMap (int cX, int cY, const int* maps);
-    int centerX;
-    int centerY;
+    PieceMap (int c, int s, const int* maps);
+    int center;
+    int size;
     const int* maps;
 };
 extern int pieceInitialPos;
@@ -82,5 +101,6 @@ extern const int TSpinDoubleRMap [9];
 
 // settings
 extern bool g_findTSpins;
+extern bool g_4w;
 
 #endif /* Info_h */

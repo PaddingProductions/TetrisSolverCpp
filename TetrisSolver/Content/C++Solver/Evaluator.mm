@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#include "Evaluator.h"
+#include "Solver.h"
 #include <vector>
 
 using namespace std;
@@ -14,28 +14,28 @@ using namespace std;
 
 struct Weights {
     int height = -10;
-    int height_H2 = -100;
-    int height_Q4 = -500;
+    int height_H2 = -500;
+    int height_Q4 = -1000;
     int holes = -600;
     int hole_depth = -25;
     int hole_depth_sq = 1;
-    int clears[4] = {-100, -70, 10, 400};
+    int clears[4] = {0, 0, 0, 400};
     int bumpiness = -24;
     int bumpiness_sq = -7;
     int max_well_depth = 50;
     int well_depth = 15;
     int well_placement[10] = {25, -10, 15, 30, 10, 10, 30, 10, -15, 25};
     int tsdCompleteness[3] = {50, 100, 300};
-    int tspin_filled_rows = 100;
-    int tspin[4] = {-400, 100, 600, 800};
-    int wasted_t = -150;
-    int b2b_bonus = 150;
-    int b2b_break = -150;
+    int tspin_filled_rows = 200;
+    int wasted_t = -200;
+    int tspin[4] = {-600, -400, 600, 800};
+    int combo = 20;
+    int b2b_bonus = 200;
 };
 
 Weights weights = Weights();
 
-int Evaluate (Future* future) {
+int Solver::Evaluate (Future* future) {
 
     
     vector<vector<int>>& chart = future->chart;
@@ -121,13 +121,14 @@ int Evaluate (Future* future) {
     else  score += wellValue * weights.well_depth + weights.well_placement[wellPos];
     score += cellsCoveringHoles * weights.hole_depth;
     score += cellsCoveringHoles_sq * weights.hole_depth_sq;
-    
+    score += future->b2b * weights.b2b_bonus;
+    score += future->combo * weights.combo;
     // tspins
     
     if (g_findTSpins) {
+        if (future->executedTSpin == -1 && future->piece == 4) score += weights.wasted_t;
         score += weights.tsdCompleteness[tspin.completeness -1];
         if (future->executedTSpin != -1) score += weights.tspin[(future->executedTSpin)];
-        if (future->piece == 4 && future->executedTSpin == -1) score += weights.wasted_t;
         score += tspin.filledRows * weights.tspin_filled_rows;
     }
 
