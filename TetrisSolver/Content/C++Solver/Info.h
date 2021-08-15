@@ -14,6 +14,12 @@
 
 extern char PieceNames[7];
 
+extern long long d_sizeSum;
+extern long long d_solveCallCnt;
+extern double d_timeSum;
+extern long long d_timeCallCnt;
+extern double d_evaluater_time_avg;
+
 struct Pos {
     Pos ();
     Pos (int _x, int _y);
@@ -65,6 +71,7 @@ struct Future {
     int piece = -1;
     int b2b;
     int combo;
+    bool b2bBreak = false;
     int _4w_value = 22;
     TSpin tspin = TSpin();
 };

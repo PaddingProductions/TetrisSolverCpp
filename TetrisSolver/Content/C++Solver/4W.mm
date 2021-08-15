@@ -127,7 +127,6 @@ int Solver::_4w_Evaluate (Future* future, const vector<int>& stack) {
 
 
 Future Solver::Build_4w(const Field* field) {
-    /*
     vector<int> stack; stack.resize(6);
     for (int i=0; i<6; i++) stack[i] = (_4w_wellPos + 4 + i) % 10;
     
@@ -135,9 +134,9 @@ Future Solver::Build_4w(const Field* field) {
         
         int seedPos = _4w_wellPos +(_4w_seedDirect * 3);
         if (field->piece == 2 || field->piece == 3 || field->piece == 4 || field->piece == 5) {
-            Piece piece = Piece(field->piece, seedPos, 0);
+            Piece piece = Piece(field->piece, seedPos);
             Future future = Future(field);
-            future.instruction = Instruction(seedPos, 0);
+            future.instruction = Instruction(seedPos, 0, 0);
             
             findDropLocation(future.chart, &piece);
             addToChart(future.chart, &piece);
@@ -146,9 +145,9 @@ Future Solver::Build_4w(const Field* field) {
             return future;
         }
         if (field->hold == 2 || field->hold == 3 || field->hold == 4 || field->hold == 5) {
-            Piece piece = Piece(field->hold, seedPos, 0);
+            Piece piece = Piece(field->hold, seedPos);
             Future future = Future(field);
-            future.instruction = Instruction(seedPos, 0);
+            future.instruction = Instruction(seedPos, 0, 0);
             future.instruction.hold = true;
             
             findDropLocation(future.chart, &piece);
@@ -163,24 +162,26 @@ Future Solver::Build_4w(const Field* field) {
     }
     
         
-    
     int size = 120;
-    Future futures[2 * size];
+    vector<Future> futures;
+    futures.resize(2 * size);
     
-    predict(futures, field, field->piece);
-    predict(&futures[size], field, field->hold);
-    for (int i = size; i < size*2; i++)
+    int end1 = GenerateFutures(futures, field, field->piece, 0);
+    int end2 = GenerateFutures(futures, field, field->hold, end1);
+    for (int i = end1; i < end2; i++)
         futures[i].instruction.hold = true;
+    futures.resize(end2);
 
-
-    for (int i=0; i < size  * 2; i++) {
+    for (int i=0; i < futures.size(); i++) {
         if (futures[i].impossible) continue;
         futures[i].score = _4w_Evaluate(&futures[i], stack);
     }
+    
+    
     int highestScore = 0;  // highest score
     int best = -1;    // index of best future
     
-    for (int i=0; i < size * 2; i++) {
+    for (int i=0; i < futures.size(); i++) {
         if (futures[i].impossible) continue;
         if (futures[i].score > highestScore || best == -1) {
             highestScore = futures[i].score;
@@ -189,11 +190,48 @@ Future Solver::Build_4w(const Field* field) {
     }
     
     if (best == -1) return Solve_4w(field);
-    if (futures[best]._4w_value >= 15) _4w_building = false;
-    return futures[best]; */
-    return Future(field);
+    if (futures[best]._4w_value >= 13) _4w_building = false;
+    
+    return futures[best];
 }
 
 Future Solver::Solve_4w(const Field* field) {
-    return solve(field);
+    
+    int size = 120;
+    vector<Future> futures;
+    futures.resize(2 * size);
+    
+    int end1 = GenerateFutures(futures, field, field->piece, 0);
+    int end2 = GenerateFutures(futures, field, field->hold, end1);
+    for (int i = end1; i < end2; i++)
+        futures[i].instruction.hold = true;
+    futures.resize(end2);
+
+    for (int i=0; i < futures.size(); i++) {
+        if (futures[i].impossible) continue;
+        futures[i].score = Evaluate(&futures[i]);
+    }
+    
+    
+    int highestScore = 0;  // highest score
+    int best = -1;    // index of best future
+    
+    for (int i=0; i < futures.size(); i++) {
+        if (futures[i].impossible) continue;
+        if (futures[i].combo != _4w_prevCombo +1) {
+            futures[i].impossible = 0;
+            continue;
+        }
+        if (futures[i].score > highestScore || best == -1) {
+            highestScore = futures[i].score;
+            best = i;
+        }
+    }
+    
+    if (best == -1) {
+        _4w_finished = true;
+        return solve(field);
+    }
+    _4w_prevCombo++;
+    return futures[best];
 }

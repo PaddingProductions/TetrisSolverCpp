@@ -188,6 +188,11 @@ struct TetrisCoordinator {
     return m_solver->solve();
 }
 -(bool) gameOver {
+    if (m_solver->m_gameOver) {
+        NSLog(@"average size: %d", d_sizeSum/ d_solveCallCnt);
+        NSLog(@"average solve time: %lf", d_timeSum/ double(d_timeCallCnt));
+        NSLog(@"average eval time: %lf", d_evaluater_time_avg);
+    }
     return m_solver->m_gameOver;
 }
 @end

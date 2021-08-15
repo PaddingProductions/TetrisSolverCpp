@@ -22,7 +22,8 @@ void Solver::reset () {
     _4w_seedDirect = -1;
     _4w_building = true;
     _4w_seedPlaced = false;
-    m_finished_4w = false;
+    _4w_finished = false;
+    _4w_prevCombo = 0;
 }
 
 void Solver::printChart (const vector<vector<int>>& chart) {
@@ -38,8 +39,9 @@ void Solver::printChart (const vector<vector<int>>& chart) {
     }
 }
 
-void Solver::addToChart (vector<vector<int>>& chart, Piece* piece) {
+vector<vector<int>> Solver::addToChart (const vector<vector<int>>& ref, Piece* piece) {
     
+    vector<vector<int>> chart = ref;
     for  (int y=0; y<piece->size; y++) {
         for (int x=0; x<piece->size; x++) {  // for all nodes
             int currX = piece->x - piece->center + x;
@@ -49,6 +51,7 @@ void Solver::addToChart (vector<vector<int>>& chart, Piece* piece) {
                 chart[currY][currX] = 1;
         }
     }
+    return chart;
 }
 
 bool Solver::isValid (const vector<vector<int>>& chart, Piece* piece, bool ignoreTop) {
@@ -98,10 +101,10 @@ int Solver::clear (vector<vector<int>>& chart) {
 bool Solver::_3CornerCheck(vector<vector<int>>& chart, Piece* piece) {
     
     int cnt = 0;
-    if (piece->x > 0 && piece->y > 0) cnt += chart[piece->x -1][piece->y-1]; else cnt ++;
-    if (piece->x > 0 && piece->y < 19) cnt += chart[piece->x -1][piece->y+1]; else cnt ++;
-    if (piece->x < 9 && piece->y < 19) cnt += chart[piece->x +1][piece->y+1]; else cnt ++;
-    if (piece->x < 9 && piece->y > 0) cnt += chart[piece->x +1][piece->y-1]; else cnt ++;
+    if (piece->x > 0 && piece->y > 0) cnt += chart[piece->x -1][piece->y-1];
+    if (piece->x > 0 && piece->y < 19) cnt += chart[piece->x -1][piece->y+1];
+    if (piece->x < 9 && piece->y < 19) cnt += chart[piece->x +1][piece->y+1];
+    if (piece->x < 9 && piece->y > 0) cnt += chart[piece->x +1][piece->y-1]; 
 
     return cnt >= 3;
 }
@@ -121,23 +124,28 @@ Future Solver::ApplyPiece (const Field* field, Piece* piece, int ID, int x, int 
         future.impossible = true;
         return future;
     }
-    addToChart(future.chart, piece);
-    future.clears = clear(future.chart);
     
-    if (g_findTSpins) future.tspin = FindBestTsd(&future);
-    
+    vector<vector<int>> result = addToChart(future.chart, piece);
+    future.clears = clear(result);
+
     if (piece->ID == 4) // if T
         if (piece->r == spin_r && spin_r != base_r) // if spun && sucessful
             if (_3CornerCheck(future.chart, piece)) // 3 corner rule
                 future.executedTSpin = future.clears;
     
     
+    future.chart = result;
+    if (g_findTSpins) future.tspin = FindBestTsd(&future);
+
     if (future.clears != 0) future.combo ++;
     else future.combo = 0;
     
     if (future.clears == 4 || future.executedTSpin != -1) future.b2b ++;
-    else future.b2b = 0;
-    
+    else {
+        if (future.b2b != 0)
+            future.b2bBreak = true;
+        future.b2b = 0;
+    }
     return future;
 }
 
@@ -186,6 +194,9 @@ Future Solver::solve (const Field* field) {
     
     int end1 = GenerateFutures(futures, field, field->piece, 0);
     int end2 = GenerateFutures(futures, field, field->hold, end1);
+    d_sizeSum += end2;
+    d_solveCallCnt ++;
+    
     for (int i = end1; i < end2; i++)
         futures[i].instruction.hold = true;
     futures.resize(end2);
@@ -219,13 +230,24 @@ Future Solver::Solve (const Field* field) {
     
     Future result = Future();
     
-    result = solve(field);
+    if (!_4w_finished && g_4w) {
+        if (_4w_building) {
+            result = Build_4w(field);
+        } else {
+            result = Solve_4w(field);
+        }
+    } else {
+        result = solve(field);
+    }
     
     
     printChart(result.chart);
     NSTimeInterval timeInterval = [start timeIntervalSinceNow];
     NSLog(@" ---- piece: %c, %c", PieceNames[field->piece], PieceNames[field->hold]);
     NSLog(@" ---- time consumed: %f", timeInterval);
+    
+    d_timeSum += timeInterval;
+    d_timeCallCnt ++;
     
     return result;
 }

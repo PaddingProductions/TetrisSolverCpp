@@ -13,29 +13,33 @@ using namespace std;
 
 
 struct Weights {
-    int height = -10;
-    int height_H2 = -500;
-    int height_Q4 = -1000;
-    int holes = -600;
-    int hole_depth = -25;
-    int hole_depth_sq = 1;
-    int clears[4] = {0, 0, 0, 400};
+    int height = -39;
+    int height_H2 = -150;
+    int height_Q4 = -511;
+    int holes = -1000;
+    int hole_depth = -50;
+    int hole_depth_sq = 5;
+    int clears[4] = {-230, -200, -160, 400};
     int bumpiness = -24;
     int bumpiness_sq = -7;
     int max_well_depth = 50;
     int well_depth = 15;
     int well_placement[10] = {25, -10, 15, 30, 10, 10, 30, 10, -15, 25};
-    int tsdCompleteness[3] = {50, 100, 300};
-    int tspin_filled_rows = 200;
-    int wasted_t = -200;
-    int tspin[4] = {-600, -400, 600, 800};
-    int combo = 20;
-    int b2b_bonus = 200;
+    int tsdCompleteness[3] = {150, 200, 350};
+    int tspin_filled_rows = 100;
+    int wasted_t = -150;
+    int tspin[4] = {-300, 121, 410, 600};
+    int combo = 150;
+    int b2b_bonus = 52;
+    int b2b_break = -100;
 };
 
 Weights weights = Weights();
 
 int Solver::Evaluate (Future* future) {
+
+
+    NSDate *start = [NSDate date];
 
     
     vector<vector<int>>& chart = future->chart;
@@ -114,7 +118,7 @@ int Solver::Evaluate (Future* future) {
     if (maxHeight >= 10) score += maxHeight * weights.height_H2;
     if (maxHeight >= 15) score += maxHeight * weights.height_Q4;
     score += holes * weights.holes;
-    score += weights.clears[future->clears];
+    score += weights.clears[future->clears-1];
     score += totalDifference * weights.bumpiness;
     score += totalDifference_sq * weights.bumpiness_sq;
     if (wellDepth == 0) score += wellValue * weights.max_well_depth + weights.well_placement[wellPos];
@@ -123,8 +127,9 @@ int Solver::Evaluate (Future* future) {
     score += cellsCoveringHoles_sq * weights.hole_depth_sq;
     score += future->b2b * weights.b2b_bonus;
     score += future->combo * weights.combo;
-    // tspins
+    score += future->b2bBreak * weights.b2b_break;
     
+    // tspins
     if (g_findTSpins) {
         if (future->executedTSpin == -1 && future->piece == 4) score += weights.wasted_t;
         score += weights.tsdCompleteness[tspin.completeness -1];
@@ -132,6 +137,8 @@ int Solver::Evaluate (Future* future) {
         score += tspin.filledRows * weights.tspin_filled_rows;
     }
 
+    NSTimeInterval timeInterval = [start timeIntervalSinceNow];
+    d_evaluater_time_avg = (d_evaluater_time_avg - timeInterval) / 2.0;
     return score;
 }
 

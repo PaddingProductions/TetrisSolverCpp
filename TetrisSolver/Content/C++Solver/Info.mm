@@ -14,6 +14,12 @@
 
 using namespace std;
 
+long long d_sizeSum = 0;
+long long d_solveCallCnt = 0;
+double d_timeSum = 0;
+long long d_timeCallCnt = 0;
+double d_evaluater_time_avg = 0;
+
 bool g_findTSpins = false;
 bool g_4w = false;
 

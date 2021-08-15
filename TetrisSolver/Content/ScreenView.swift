@@ -18,7 +18,7 @@ struct ScreenView: View {
 
     @StateObject var evaluatorTestInput = EvaluatorTestInput()
     @StateObject var evaluatorTestOutput = EvaluatorTestOutput()
-    let speed: Double = 5; // in PPS
+    let speed: Double = 6; // in PPS
     let delay: Int;
     
     @State var findTSpins = false;
@@ -162,7 +162,7 @@ struct ScreenView: View {
                         }
                         Button("Set Settings") {
                             m_solver!.set_FindTspins(findTSpins);
-                            m_solver!.set_4w(findTSpins);
+                            m_solver!.set_4w(opener_4w);
                         }
                     }
                 }
