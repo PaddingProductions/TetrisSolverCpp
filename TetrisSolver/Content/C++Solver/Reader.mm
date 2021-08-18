@@ -118,20 +118,20 @@ Pos TetrisGetPreviewCorner (ObjC_Bitmap* bitmap, Pos& tC) {
     return pos;
 }
 
-int TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC) {
+PieceType TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC) {
     for (int y=0; y<3; y++) {
         for (int x=0; x<4; x++) {
             uint32_t color = [bitmap getValue: refC.x + x*blockSize +10 :refC.y + y*blockSize +10];
             
             for (int i=0; i<7; i++)
                 if (ColorCompare(color, PieceToColor[i], 10))
-                    return i;
+                    return static_cast<PieceType>(i);
         }
     }
-    return -1;
+    return PieceType::None;
 }
 
-int GetInitialPiece (ObjC_Bitmap* bitmap, Pos& tC) {
+PieceType GetInitialPiece (ObjC_Bitmap* bitmap, Pos& tC) {
 
     for (int y=0; y<20; y++) {
         for (int x=3; x<7; x++) {
@@ -139,13 +139,13 @@ int GetInitialPiece (ObjC_Bitmap* bitmap, Pos& tC) {
 
             for (int i=0; i<7; i++)
                 if (ColorCompare(color, PieceToColor[i], 10))
-                    return i;
+                    return static_cast<PieceType>(i);
         }
     }
 
-    return -1;
+    return PieceType::None;
 }
-int getCurrentPiece(ObjC_Bitmap* bitmap, Pos pos) {
+PieceType getCurrentPiece(ObjC_Bitmap* bitmap, Pos pos) {
 
     for (int y=0; y<20; y++) {
         for (int x=3; x<7; x++) {
@@ -153,22 +153,22 @@ int getCurrentPiece(ObjC_Bitmap* bitmap, Pos pos) {
             
             for (int i=0; i<7; i++)
                 if (ColorCompare(color, PieceToColor[i], 10))
-                    return i;
+                    return static_cast<PieceType>(i);
         }
     }
 
-    return -1;
+    return PieceType::None;
 }
 
 
 
-int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, int cP) {
+int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, PieceType cP) {
     Pos pos = tC;
     pos.x += x * blockSize  + 10;
     pos.y += y * blockSize  + 10;
     uint32_t color = [bitmap getValue:pos.x :pos.y];
     
-    if (ColorCompare(color, shadowColor[cP], 10))
+    if (ColorCompare(color, shadowColor[int(cP)], 10))
         return 0;
     if (ColorCompare(color, grey, 10))
         return -1;

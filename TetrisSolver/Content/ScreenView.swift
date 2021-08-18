@@ -15,14 +15,14 @@ struct ScreenView: View {
     @State var screenImage: CGImage? = nil
     @State var screenBitmap: ObjC_Bitmap?
     @State var m_solver: ObjC_Coordinator?
-
+    @State var d_solverTimeAvg = 0.0;
+    
     @StateObject var evaluatorTestInput = EvaluatorTestInput()
     @StateObject var evaluatorTestOutput = EvaluatorTestOutput()
     let speed: Double = 6; // in PPS
     let delay: Int;
     
     @State var findTSpins = false;
-    @State var opener_4w = false;
 
     init (targetWindow: TargetWindow) {
         
@@ -74,12 +74,16 @@ struct ScreenView: View {
                                 let end = DispatchTime.now();
                                 
                                 let microTime: Int = Int((end.uptimeNanoseconds - start.uptimeNanoseconds) / 1000)
+                                let secondTime: Double = Double(microTime) / 1_000_000
+                                d_solverTimeAvg = (d_solverTimeAvg + secondTime) / 2.0
+
                                 usleep( useconds_t(max( 1, delay - microTime )) )
                                 
                                 start = DispatchTime.now();
                                 self.update()
                                 m_solver!.update(screenBitmap!)
                             }
+                            print(" ---- Avg Swift wrapped solve time: \(d_solverTimeAvg)")
                         }
                         Button("PvP Solve") {
                             LClick (pos: CGPoint(x: targetWindow.pos.x + 10, y: targetWindow.pos.y + 10))
@@ -157,12 +161,8 @@ struct ScreenView: View {
                         Toggle(isOn: $findTSpins) {
                             Text("Enable T-Spin Finder")
                         }
-                        Toggle(isOn: $opener_4w) {
-                            Text("Enable 4w opener")
-                        }
                         Button("Set Settings") {
                             m_solver!.set_FindTspins(findTSpins);
-                            m_solver!.set_4w(opener_4w);
                         }
                     }
                 }

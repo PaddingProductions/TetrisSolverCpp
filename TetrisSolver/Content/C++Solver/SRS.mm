@@ -232,8 +232,8 @@ void Solver::Spin (Future* future, Piece* piece, int nR, bool log) {
     if (piece->r == nR) return;
     if ((piece->r + 2) %4 == nR) return;
     
-    Pos* offset1 = KickTable[piece->ID][piece->r];
-    Pos* offset2 = KickTable[piece->ID][nR];
+    Pos* offset1 = KickTable[int(piece->ID)][piece->r];
+    Pos* offset2 = KickTable[int(piece->ID)][nR];
 
     Pos kickTests[5];
     
@@ -255,7 +255,7 @@ void Solver::Spin (Future* future, Piece* piece, int nR, bool log) {
             }
             
             piece->r = nR;
-            piece->map = &pieceMaps[piece->ID].maps[nR * piece->size * piece->size];
+            piece->map = &pieceMaps[int(piece->ID)].maps[nR * piece->size * piece->size];
             piece->x += kickTests[i].x;
             piece->y -= kickTests[i].y; // the kick table is generated under the assumption that y axis grows upwards
             

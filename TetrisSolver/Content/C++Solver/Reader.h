@@ -19,11 +19,11 @@ Pos TetrisGetBottomCorner (ObjC_Bitmap* bitmap, Pos& tC);
 Pos TetrisGetHoldCorner (ObjC_Bitmap* bitmap, Pos& tC);
 Pos TetrisGetPreviewCorner (ObjC_Bitmap* bitmap, Pos& tC);
 
-int TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC);
-int getCurrentPiece(ObjC_Bitmap* bitmap, Pos tC);
-int GetInitialPiece(ObjC_Bitmap* bitmap, Pos& tC);
+PieceType TetrisGetPiece (ObjC_Bitmap* bitmap, Pos& refC);
+PieceType getCurrentPiece(ObjC_Bitmap* bitmap, Pos tC);
+PieceType GetInitialPiece(ObjC_Bitmap* bitmap, Pos& tC);
 
-int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, int cP);
+int checkIfFilled (ObjC_Bitmap* bitmap, Pos& tC, int x, int y, PieceType cP);
 void initialize_ColorToPiece();
 
 #endif /* Reader_h */

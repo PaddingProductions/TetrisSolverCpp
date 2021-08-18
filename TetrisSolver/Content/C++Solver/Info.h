@@ -14,11 +14,31 @@
 
 extern char PieceNames[7];
 
-extern long long d_sizeSum;
-extern long long d_solveCallCnt;
-extern double d_timeSum;
-extern long long d_timeCallCnt;
+extern double d_prediction_size_avg;
+extern double d_solve_time_avg;
 extern double d_evaluater_time_avg;
+
+enum class ClearType : uint8_t {
+    None = 0,
+    clear1,
+    clear2,
+    clear3,
+    clear4,
+    tspin1,
+    tspin2,
+    tspin3
+};
+
+enum class PieceType : uint8_t {
+    J,
+    L,
+    S,
+    Z,
+    T,
+    I,
+    O,
+    None
+};
 
 struct Pos {
     Pos ();
@@ -51,12 +71,13 @@ struct Field {
     void update (const std::vector<std::vector<int>>& _chart, int _combo, int _b2b );
     std::vector<std::vector<int>> chart;
     bool impossible = false;
-    int piece = -1;
-    int hold = -1;
+    PieceType piece = PieceType::None;
+    PieceType hold = PieceType::None;
     int b2b = 0;
     int combo = 0;
     TSpin tspin = TSpin();
 };
+
 
 
 struct Future {
@@ -65,30 +86,35 @@ struct Future {
     std::vector<std::vector<int>> chart;
     Instruction instruction = Instruction(0,0,0);
     bool impossible = false;
-    int clears = 0;
+    ClearType clears = ClearType::None;
     int score = 0;
-    int executedTSpin = -1;
     int piece = -1;
     int b2b;
     int combo;
     bool b2bBreak = false;
     int _4w_value = 22;
     TSpin tspin = TSpin();
+    
+    friend bool operator < (const Future& f1, const Future& f2);
 };
 
 
 
 struct Piece {
     Piece ();
-    Piece (int _ID, int _x);
-    Piece (int _ID, int _x, int _y, int _r);
-    int ID = -1;
+    Piece (PieceType _ID, int _x);
+    Piece (PieceType _ID, int _x, int _y, int _r);
+    int set_int_rep ();
+    
+    PieceType ID = PieceType::T;
     int r = 0;
     int x = 0;
     int y = 0;
     const int* map = nullptr;
     int center = 0;
     int size = 0;
+    int int_r = 0;
+    friend bool operator < (const Piece& p1, const Piece& p2);
 };
 
 struct PieceMap {

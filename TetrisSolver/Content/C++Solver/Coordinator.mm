@@ -25,23 +25,19 @@ struct TetrisCoordinator {
     
     bool initialize (ObjC_Bitmap* bitmap) {
         
-        m_solver.reset();
         m_gameOver = false;
         m_field = Field();
         m_field.piece = GetInitialPiece(bitmap, m_topCorner);
         m_previews.resize(5);
         
-        if (m_field.piece == -1)  // safety
+        if (m_field.piece == PieceType::None)  // safety
             return false;
         
         
         for (int i=0; i<5; i++) {
             Pos corner = Pos(m_previewCorner.x, m_previewCorner.y + (i * blockSize * 3));
-            int piece = TetrisGetPiece(bitmap, corner);
-            
-            m_previews[i] = piece;
+            m_previews[i] = TetrisGetPiece(bitmap, corner);
         }
-        m_solver.Find_4w(m_field.piece, &m_previews);
         
         fetchChart(bitmap);
         for (int cy=0; cy<20; cy++) {
@@ -61,7 +57,7 @@ struct TetrisCoordinator {
         
         bool emptyHold = false; // since setting it to preview[0] is a temporary measure,
                                 // we need to set it back into -1 after we're done
-        if (m_field.hold == -1) {
+        if (m_field.hold == PieceType::None) {
             m_field.hold = m_previews[0];
             emptyHold = true;
         }
@@ -69,7 +65,7 @@ struct TetrisCoordinator {
         Future future = Future();
         future = m_solver.Solve(&m_field);
         
-        if (emptyHold) m_field.hold = -1;
+        if (emptyHold) m_field.hold = PieceType::None;
         if (future.instruction.hold == true)
             m_field.hold = m_field.piece;
         m_field.update(future.chart, future.combo, future.b2b);
@@ -83,7 +79,7 @@ struct TetrisCoordinator {
 
         for (int i=0; i<5; i++) {
             Pos corner = Pos(m_previewCorner.x, m_previewCorner.y + (i * blockSize * 3));
-            int piece = TetrisGetPiece(bitmap, corner);
+            PieceType piece = TetrisGetPiece(bitmap, corner);
             m_previews[i] = piece;
         }
     }
@@ -139,7 +135,7 @@ struct TetrisCoordinator {
     
     Solver m_solver = Solver();
         
-    vector<int> m_previews;
+    vector<PieceType> m_previews;
     bool m_gameOver = false;
 };
 
@@ -172,9 +168,6 @@ struct TetrisCoordinator {
 - (void) set_FindTspins :(bool)input {
     g_findTSpins = input;
 }
-- (void) set_4w :(bool)input {
-    g_4w = input;
-}
 - (void) dealloc {
     delete m_solver;
 }
@@ -189,8 +182,8 @@ struct TetrisCoordinator {
 }
 -(bool) gameOver {
     if (m_solver->m_gameOver) {
-        NSLog(@"average size: %d", d_sizeSum/ d_solveCallCnt);
-        NSLog(@"average solve time: %lf", d_timeSum/ double(d_timeCallCnt));
+        NSLog(@"average future size: %lf", d_prediction_size_avg);
+        NSLog(@"average solve time: %lf", d_solve_time_avg);
         NSLog(@"average eval time: %lf", d_evaluater_time_avg);
     }
     return m_solver->m_gameOver;

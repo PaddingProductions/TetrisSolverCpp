@@ -40,8 +40,6 @@ int Solver::Evaluate (Future* future) {
 
 
     NSDate *start = [NSDate date];
-
-    
     vector<vector<int>>& chart = future->chart;
     
     TSpin& tspin = future->tspin;
@@ -118,7 +116,7 @@ int Solver::Evaluate (Future* future) {
     if (maxHeight >= 10) score += maxHeight * weights.height_H2;
     if (maxHeight >= 15) score += maxHeight * weights.height_Q4;
     score += holes * weights.holes;
-    score += weights.clears[future->clears-1];
+    score += weights.clears[int(future->clears) -1];
     score += totalDifference * weights.bumpiness;
     score += totalDifference_sq * weights.bumpiness_sq;
     if (wellDepth == 0) score += wellValue * weights.max_well_depth + weights.well_placement[wellPos];
@@ -131,9 +129,9 @@ int Solver::Evaluate (Future* future) {
     
     // tspins
     if (g_findTSpins) {
-        if (future->executedTSpin == -1 && future->piece == 4) score += weights.wasted_t;
+        if (int(future->clears) <  int(ClearType::tspin1)) score += weights.wasted_t;
+        if (int(future->clears) >= int(ClearType::tspin1)) score += weights.tspin[int(future->clears) -  int (future->clears)];
         score += weights.tsdCompleteness[tspin.completeness -1];
-        if (future->executedTSpin != -1) score += weights.tspin[(future->executedTSpin)];
         score += tspin.filledRows * weights.tspin_filled_rows;
     }
 

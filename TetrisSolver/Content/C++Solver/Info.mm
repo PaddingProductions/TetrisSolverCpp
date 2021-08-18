@@ -14,10 +14,8 @@
 
 using namespace std;
 
-long long d_sizeSum = 0;
-long long d_solveCallCnt = 0;
-double d_timeSum = 0;
-long long d_timeCallCnt = 0;
+double d_prediction_size_avg = 0;
+double d_solve_time_avg = 0;
 double d_evaluater_time_avg = 0;
 
 bool g_findTSpins = false;
@@ -80,29 +78,50 @@ char PieceNames[7] = {
     'O'
 };
 
+
+
 Pos::Pos () {}
 Pos::Pos (int _x, int _y) {
     x = _x;
     y = _y;
 }
+
 Piece::Piece () {}
-Piece::Piece (int _ID, int _x) {
+Piece::Piece (PieceType _ID, int _x) {
     ID = _ID;
     x = _x;
-    size = pieceMaps[ID].size;
-    map = (pieceMaps[ID].maps);
-    center = pieceMaps[ID].center;
+    size = pieceMaps[int(ID)].size;
+    map = (pieceMaps[int(ID)].maps);
+    center = pieceMaps[int(ID)].center;
 }
-Piece::Piece (int _ID, int _x, int _y, int _r) {
+Piece::Piece (PieceType _ID, int _x, int _y, int _r) {
     ID = _ID;
     x = _x;
     y = _y;
     r = _r;
-    size = pieceMaps[ID].size;
-    map = (pieceMaps[ID].maps) + r*size*size;
-    center = pieceMaps[ID].center;
+    size = pieceMaps[int(ID)].size;
+    map = (pieceMaps[int(ID)].maps) + r*size*size;
+    center = pieceMaps[int(ID)].center;
+}
+int Piece::set_int_rep () {
+    if (x < 0 || y < 0 || x >= 10 || y >= 20)
+        return -1;
+    
+    int_r = (int_r << 3) + int(ID);
+    int_r = (int_r << 4) + x;
+    int_r = (int_r << 5) + y;
+    int_r = (int_r << 2) + r;
+    
+    return int_r;
 }
 
+bool operator< (const Piece& p1, const Piece& p2) {
+    if (p1.ID != p2.ID) return p1.ID < p2.ID;
+    if (p1.x != p2.x) return p1.x < p2.x;
+    if (p1.y != p2.y) return p1.y < p2.y;
+    if (p1.r != p2.r) return p1.r < p2.r;
+    return false;
+}
 
 PieceMap::PieceMap (int c, int s, const int* maps_) {
     center = c;

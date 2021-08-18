@@ -21,7 +21,6 @@
 -(bool) reset: (ObjC_Bitmap*) bitmap;
 -(bool) gameOver;
 -(void) set_FindTspins :(bool) input;
--(void) set_4w :(bool) input;
 
 @end
 

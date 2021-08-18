@@ -10,6 +10,7 @@
 #include <list>
 #include <algorithm>
 #include <string>
+#include <set>
 #include "Info.h"
 #include "Instruction.h"
 #include "Solver.h"
@@ -17,14 +18,6 @@
 
 using namespace std;
 
-void Solver::reset () {
-    _4w_wellPos = -1;
-    _4w_seedDirect = -1;
-    _4w_building = true;
-    _4w_seedPlaced = false;
-    _4w_finished = false;
-    _4w_prevCombo = 0;
-}
 
 void Solver::printChart (const vector<vector<int>>& chart) {
     for (int y=0; y<20; y++) {
@@ -109,10 +102,10 @@ bool Solver::_3CornerCheck(vector<vector<int>>& chart, Piece* piece) {
     return cnt >= 3;
 }
 
-Future Solver::ApplyPiece (const Field* field, Piece* piece, int ID, int x, int base_r, int spin_r) {
+Future Solver::ApplyPiece (const Field* field, Piece* piece, PieceType pieceID, int x, int base_r, int spin_r) {
       
     Future future = Future(field);
-    *piece = Piece(ID, pieceInitialPos);
+    *piece = Piece(pieceID, pieceInitialPos);
     Spin(&future, piece, base_r);
     piece->x += x - pieceInitialPos;
     
@@ -126,21 +119,21 @@ Future Solver::ApplyPiece (const Field* field, Piece* piece, int ID, int x, int 
     }
     
     vector<vector<int>> result = addToChart(future.chart, piece);
-    future.clears = clear(result);
+    future.clears = static_cast<ClearType>(clear(result));
 
-    if (piece->ID == 4) // if T
+    if (piece->ID == PieceType::T)
         if (piece->r == spin_r && spin_r != base_r) // if spun && sucessful
             if (_3CornerCheck(future.chart, piece)) // 3 corner rule
-                future.executedTSpin = future.clears;
+                future.clears = static_cast<ClearType>(int(ClearType::tspin1) + int(future.clears));
     
     
     future.chart = result;
     if (g_findTSpins) future.tspin = FindBestTsd(&future);
 
-    if (future.clears != 0) future.combo ++;
+    if (future.clears != ClearType::None) future.combo ++;
     else future.combo = 0;
     
-    if (future.clears == 4 || future.executedTSpin != -1) future.b2b ++;
+    if (int(future.clears) >= int(ClearType::clear4)) future.b2b ++;
     else {
         if (future.b2b != 0)
             future.b2bBreak = true;
@@ -149,24 +142,27 @@ Future Solver::ApplyPiece (const Field* field, Piece* piece, int ID, int x, int 
     return future;
 }
 
-int Solver::GenerateFutures (vector<Future>& futures, const Field* field, int pieceID, int startAt) {
+int Solver::GenerateFutures (vector<Future>& futures, const Field* field, PieceType pieceID, int startAt) {
     
     // NOTE:
     // piece.x != instruction.x
     // this is because a kick may change the piece's x position
     
     int i = startAt;
+    set<int> pieceSet;
+    
     for (int x=0; x<10; x++) {
-        Piece base_pieces[4];
-        
         for (int r=0; r<4; r++) {
-            Future future = ApplyPiece(field, &(base_pieces[r]), pieceID, x, r, r);
+            Piece piece = Piece();
+            Future future = ApplyPiece(field, &piece, pieceID, x, r, r);
             future.instruction = Instruction(x, r, r);
             
-            if (future.impossible) continue;
-            futures[i++] = future;
+            if (!future.impossible && !pieceSet.count(piece.set_int_rep())) {
+                futures[i++] = future;
+                pieceSet.insert(piece.int_r);
+            }
         }
-        if (pieceID == 5) continue;
+        if (pieceID == PieceType::I) continue;
         
         for (int r=0; r<4; r++) {
             for (int s=0; s<4; s++) {
@@ -175,11 +171,11 @@ int Solver::GenerateFutures (vector<Future>& futures, const Field* field, int pi
                 Piece piece = Piece();
                 Future future = ApplyPiece(field, &piece, pieceID, x, r, s);
                 future.instruction = Instruction(x, r, s);
-                
-                // check if redundant (same as without spin)
-                if (piece.x == base_pieces[s].x && piece.y == base_pieces[s].y) continue;
-                if (future.impossible) continue;
-                futures[i++] = future;
+                                
+                if (!future.impossible && !pieceSet.count(piece.set_int_rep())) {
+                    futures[i++] = future;
+                    pieceSet.insert(piece.int_r);
+                }
             }
         }
     }
@@ -194,8 +190,7 @@ Future Solver::solve (const Field* field) {
     
     int end1 = GenerateFutures(futures, field, field->piece, 0);
     int end2 = GenerateFutures(futures, field, field->hold, end1);
-    d_sizeSum += end2;
-    d_solveCallCnt ++;
+    d_prediction_size_avg = (d_prediction_size_avg + end2) / 2.0;
     
     for (int i = end1; i < end2; i++)
         futures[i].instruction.hold = true;
@@ -229,25 +224,16 @@ Future Solver::Solve (const Field* field) {
     NSDate *start = [NSDate date];
     
     Future result = Future();
-    
-    if (!_4w_finished && g_4w) {
-        if (_4w_building) {
-            result = Build_4w(field);
-        } else {
-            result = Solve_4w(field);
-        }
-    } else {
-        result = solve(field);
-    }
-    
+
+    result = solve(field);
+        
     
     printChart(result.chart);
     NSTimeInterval timeInterval = [start timeIntervalSinceNow];
-    NSLog(@" ---- piece: %c, %c", PieceNames[field->piece], PieceNames[field->hold]);
+    NSLog(@" ---- piece: %c, %c", PieceNames[int(field->piece)], PieceNames[int(field->hold)]);
     NSLog(@" ---- time consumed: %f", timeInterval);
     
-    d_timeSum += timeInterval;
-    d_timeCallCnt ++;
+    d_solve_time_avg = (d_solve_time_avg - timeInterval) / 2.0;
     
     return result;
 }
