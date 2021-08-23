@@ -8,24 +8,27 @@
 #include <vector>
 #include <map>
 #include <list>
-#include "Bitmap.h"
-#include "Instruction.h"
+#include "../Classes/Bitmap.h"
+#include "../Classes/Instruction.h"
 #include "Info.h"
 
 using namespace std;
 
 double d_prediction_size_avg = 0;
+double d_prediction_time_avg = 0;
 double d_solve_time_avg = 0;
 double d_evaluater_time_avg = 0;
 
 bool g_findTSpins = false;
 bool g_4w = false;
 
+Instruction::Instruction () {}
 Instruction::Instruction (int _x, int _r, int _spin) {
     x = _x;
     r = _r;
     spin = _spin;
 }
+
 
 
 Field::Field () {
@@ -44,13 +47,26 @@ void Field::update (const vector<vector<int>>& _chart, int _combo, int _b2b ) {
 }
 
 
+
+
 Future::Future () {}
 Future::Future (const Field* field) {
     chart = field->chart;
     b2b = field->b2b;
     combo = field->combo;
 }
-
+int Future::set_int_r () {
+    int_r += placement.piece.x;
+    int_r = int_r << 4;
+    int_r += placement.piece.y;
+    int_r = int_r << 5;
+    int_r += placement.piece.r;
+    int_r = int_r << 2;
+    
+    return int_r;
+}
+Field emptyField = Field();
+const Future c_emptyFuture = Future(&emptyField);
 
 
 TSpin::TSpin() {};
@@ -87,13 +103,6 @@ Pos::Pos (int _x, int _y) {
 }
 
 Piece::Piece () {}
-Piece::Piece (PieceType _ID, int _x) {
-    ID = _ID;
-    x = _x;
-    size = pieceMaps[int(ID)].size;
-    map = (pieceMaps[int(ID)].maps);
-    center = pieceMaps[int(ID)].center;
-}
 Piece::Piece (PieceType _ID, int _x, int _y, int _r) {
     ID = _ID;
     x = _x;
@@ -103,6 +112,7 @@ Piece::Piece (PieceType _ID, int _x, int _y, int _r) {
     map = (pieceMaps[int(ID)].maps) + r*size*size;
     center = pieceMaps[int(ID)].center;
 }
+
 int Piece::set_int_rep () {
     if (x < 0 || y < 0 || x >= 10 || y >= 20)
         return -1;

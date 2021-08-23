@@ -6,11 +6,12 @@
 //
 
 #import <Foundation/Foundation.h>
-#include "Solver.h"
 #include <vector>
 
-using namespace std;
+#include "Solver.h"
+#include "../Lib/Library.h"
 
+using namespace std;
 
 struct Weights {
     int height = -39;
@@ -42,7 +43,7 @@ int Solver::Evaluate (Future* future) {
     NSDate *start = [NSDate date];
     vector<vector<int>>& chart = future->chart;
     
-    TSpin& tspin = future->tspin;
+    TSpin tspin = FindBestTsd(future);
     int maxHeight = -1;
     int holes = 0;
     int heights[10] = {0,0,0,0,0,0,0,0,0,0}; // first contact with filled

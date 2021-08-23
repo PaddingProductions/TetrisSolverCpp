@@ -5,101 +5,61 @@
 //  Created by Shine Chang on 8/20/21.
 //
 
-#include "Moves.h"
+#include "Info.h"
 #include "Mechanics.h"
 
 #include <vector>
+#include <list>
 #include <set>
 
 using namespace std;
 
-Placement::Placement () {};
+Placement::Placement () {}
 Placement::Placement (int x, int r, PieceType pieceID) {
-    instruc.x = x;
-    instruc.r = r;
-    
-    piece = Piece(pieceID, pieceInitialPos, 0, 0);
-    Future tF = Future();
-    Spin(&tF, &piece, r);
-    
+    piece = Piece(pieceID, pieceInitialPos);
+    spin(&c_emptyFuture, &piece, r);
     piece.x += x - pieceInitialPos;
-    valid = isValid(tF.chart, &piece, true);
-}
-void Placement::ApplySpin (Future* future, int nR) {
+    instruct = Instruction(x, r, r);
+
+    valid = isValid(&c_emptyFuture, &piece, true); // ---
     
-    Spin(&future, &piece, nR);
-    findDropLocation(future->chart, &piece);
-    
-    vector<vector<int>> result = addToChart(future->chart, &piece);
-    future->clears = static_cast<ClearType>(clear(result));
 }
 
-vector<vector<Placement>> placements;
-
+vector<vector<Placement>> c_placementChart;
 void ComputePlacements () {
-    placements.resize(7);
+    c_placementChart.resize(7);
     
-    for (int p = 0; p < 7; p++) {
-        placements[p].resize(120);
-        set<int> visited;
+    for (int i=0; i<5; i++) {
         
-        int i = 0;
+        PieceType cP = static_cast<PieceType>(i);
+        
         for (int x=0; x<10; x++) {
             for (int r=0; r<4; r++) {
-                Placement placement = Placement(x, r, static_cast<PieceType>(p));
+                Placement placement = Placement(x, r, cP);
+                if (!placement.valid) continue;
                 
-                if (visited.count(placement.piece.set_int_rep())) {
-                    placements[p][i++] = placement;
-                    visited.insert(placement.piece.int_r);
-                }
+                c_placementChart[i].push_back(placement);
             }
         }
-        placements[p].resize(i);
     }
-}
-
-
-Future ApplyPiece (const Field* field, Placement ) {
-      
-
-}
-
-
-int GenerateFutures (vector<Future>& futures, const Field* field, int pieceID, int startAt) {
-    
-    // NOTE:
-    // piece.x != instruction.x
-    // this is because a kick may change the piece's x position
-    
-    int i = startAt;
-    set<int> visited;
-    
-    for (int p = 0; p < placements[static_cast<int>(pieceID)].size(); p++) {
-        
-        Future future = Future(field);
-        Placement placement = placements[static_cast<int>(pieceID)][p];
-        placement.ApplyTo(future);
-        
-        if (placement.piece.ID == PieceType::T)
-            if (placement.piece.r == nR) // if spun && sucessful
-                if (_3CornerCheck(future->chart, &placement.piece)) // 3 corner rule
-                    future.clears = static_cast<ClearType>(
-                                                           int(ClearType::tspin1) +
-                                                           int(future.clears)
-                                                           );
-        future->chart = result;
-
-        
-        if (future->clears != ClearType::None) future->combo ++;
-        else future->combo = 0;
-        
-        if (int(future.clears) >= int(ClearType::clear4)) future->b2b ++;
-        else {
-            if (future.b2b != 0)
-                future.b2bBreak = true;
-            future.b2b = 0;
+    // I piece
+    for (int x=0; x<10; x++) {
+        for (int r=0; r<2; r++) {
+            Placement placement = Placement(x, r, PieceType::I);
+            if (!placement.valid) continue;
+            
+            c_placementChart[5].push_back(placement);
         }
-        return future;
     }
-    return i;
+
+    // O piece
+    c_placementChart[6].push_back(Placement(0,0, PieceType::O));
+    c_placementChart[6].push_back(Placement(1,0, PieceType::O));
+    c_placementChart[6].push_back(Placement(2,0, PieceType::O));
+    c_placementChart[6].push_back(Placement(3,0, PieceType::O));
+    c_placementChart[6].push_back(Placement(4,0, PieceType::O));
+    c_placementChart[6].push_back(Placement(5,0, PieceType::O));
+    c_placementChart[6].push_back(Placement(6,0, PieceType::O));
+    c_placementChart[6].push_back(Placement(7,0, PieceType::O));
+    c_placementChart[6].push_back(Placement(8,0, PieceType::O));
 }

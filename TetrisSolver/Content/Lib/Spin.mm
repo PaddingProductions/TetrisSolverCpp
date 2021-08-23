@@ -6,8 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#include "Solver.h"
-#include "Info.h"
+#include "Mechanics.h"
 #include <vector>
 
 using namespace std;
@@ -226,15 +225,19 @@ Pos KickTable [7][4][5] = {
     },
 };
 
-void Solver::Spin (Future* future, Piece* piece, int nR, bool log) {
+void spin (const Future* future, Piece* piece, int nR) {
     
-    if (!isValid(future->chart, piece, true)) return;
+    // the kick table is generated under
+    // the assumption that y axis grows upwards
+    
+    if (!isValid(future, piece, true)) return;
     if (piece->r == nR) return;
-    if ((piece->r + 2) %4 == nR) return;
+    if ((piece->r + 2) %4 == nR && piece->ID == PieceType::I) return;
     
     Pos* offset1 = KickTable[int(piece->ID)][piece->r];
     Pos* offset2 = KickTable[int(piece->ID)][nR];
-
+    int pR = piece->r;
+    
     Pos kickTests[5];
     
     for (int i=0; i<5; i++) {
@@ -245,30 +248,17 @@ void Solver::Spin (Future* future, Piece* piece, int nR, bool log) {
     }
 
     for (int i=0; i<5; i++) {
-        Piece testPiece = Piece(piece->ID, piece->x + kickTests[i].x, piece->y - kickTests[i].y, nR);
+        piece->r = nR;
+        piece->map = &pieceMaps[int(piece->ID)].maps[nR * piece->size * piece->size];
+        piece->x += kickTests[i].x;
+        piece->y -= kickTests[i].y;
         
-        if (isValid(future->chart, &testPiece, true)) {
-
-            if (log) {
-                NSLog(@"Before: x: %d, r: %d", piece->x, piece->r);
-                printChart(future->chart);
-            }
-            
-            piece->r = nR;
-            piece->map = &pieceMaps[int(piece->ID)].maps[nR * piece->size * piece->size];
-            piece->x += kickTests[i].x;
-            piece->y -= kickTests[i].y; // the kick table is generated under the assumption that y axis grows upwards
-            
-            if (log) {
-                Future nf = *future;
-                findDropLocation(nf.chart, piece);
-                addToChart(nf.chart, piece);
-                clear(nf.chart);
-                NSLog(@"After: nR: %d, kick x: %d, kick y: %d", nR, kickTests[i].x, kickTests[i].y);
-                printChart(nf.chart);
-            }
-            break;
-        }
+        if (isValid(future, piece, true)) break;
+        
+        piece->r = pR;
+        piece->map = &pieceMaps[int(piece->ID)].maps[pR * piece->size * piece->size];
+        piece->x -= kickTests[i].x;
+        piece->y += kickTests[i].y;
     }
 }
 

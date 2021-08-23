@@ -4,10 +4,10 @@
 //
 //  Created by shine on 7/30/21.
 //
-
-#import <Foundation/Foundation.h>
-#include "T-Spin.h"
 #include <vector>
+
+#include "Solver.h"
+#include "../Lib/Library.h"
 
 using namespace std;
 
@@ -68,7 +68,7 @@ int AssessTsd (const vector<vector<int>>& chart, const int* map, int pX, int pY,
     return completeness;
 }
 
-TSpin FindBestTsd (Future* future) {
+TSpin Solver::FindBestTsd (Future* future) {
     
     TSpin best = TSpin();
     int bestScore = -2;

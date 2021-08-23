@@ -11,7 +11,6 @@
 #include "Bitmap.h"
 #include "Info.h"
 
-
 extern int blockSize;
 
 Pos TetrisGetTopCorner (ObjC_Bitmap* bitmap);

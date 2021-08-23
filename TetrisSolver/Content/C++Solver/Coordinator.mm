@@ -1,13 +1,10 @@
 #import <Foundation/Foundation.h>
 #include <vector>
-#include <string>
-#include <list>
-#include <map>
-#include <algorithm>
+
 #include "Coordinator.h"
-#include "Bitmap.h"
-#include "Instruction.h"
-#include "Info.h"
+#include "../Classes/Bitmap.h"
+#include "../Classes/Instruction.h"
+#include "../Lib/Library.h"
 #include "Reader.h"
 #include "Solver.h"
 
@@ -20,7 +17,8 @@ struct TetrisCoordinator {
         , m_bottomCorner(TetrisGetBottomCorner(bitmap, m_topCorner))
         , m_previewCorner(TetrisGetPreviewCorner(bitmap, m_topCorner))
         , m_windowPos(wP) {
-    
+        
+        InitializeLibrary();
      }
     
     bool initialize (ObjC_Bitmap* bitmap) {
@@ -62,15 +60,20 @@ struct TetrisCoordinator {
             emptyHold = true;
         }
         
-        Future future = Future();
-        future = m_solver.Solve(&m_field);
+        Future future = m_solver.Solve(&m_field);
+        Instruction& instruct = future.placement.instruct;
         
         if (emptyHold) m_field.hold = PieceType::None;
-        if (future.instruction.hold == true)
+        if (instruct.hold == true)
             m_field.hold = m_field.piece;
-        m_field.update(future.chart, future.combo, future.b2b);
-        
-        return [[ObjC_Instruction alloc] init:future.instruction.x :future.instruction.r :future.instruction.hold :future.instruction.spin];
+        m_field.update(future.chart, future.combo, future.b2b );
+
+        return [[ObjC_Instruction alloc] init
+                :instruct.x
+                :instruct.r
+                :instruct.hold
+                :instruct.spin
+        ];
     }
 
     void fetchPiece (ObjC_Bitmap* bitmap) {
@@ -183,6 +186,7 @@ struct TetrisCoordinator {
 -(bool) gameOver {
     if (m_solver->m_gameOver) {
         NSLog(@"average future size: %lf", d_prediction_size_avg);
+        NSLog(@"average future time: %lf", d_prediction_time_avg);
         NSLog(@"average solve time: %lf", d_solve_time_avg);
         NSLog(@"average eval time: %lf", d_evaluater_time_avg);
     }

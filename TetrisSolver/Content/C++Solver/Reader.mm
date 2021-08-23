@@ -6,13 +6,15 @@
 //
 
 #import <Foundation/Foundation.h>
-#include "Info.h"
-#include "Reader.h"
-#include "Bitmap.h"
-
 #include <vector>
 #include <list>
 #include <map>
+
+#include "../Lib/Library.h"
+#include "Reader.h"
+#include "Bitmap.h"
+
+
 
 using namespace std;
 

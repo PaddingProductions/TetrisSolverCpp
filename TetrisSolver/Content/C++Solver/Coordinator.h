@@ -5,14 +5,15 @@
 //  Created by shine on 6/30/21.
 //
 
+
 #ifndef Coordinator_h
 #define Coordinator_h
 
-
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
-#import "Classes/Bitmap.h"
-#import "Classes/Instruction.h"
+
+#include "../Classes/Bitmap.h"
+#include "../Classes/Instruction.h"
 
 @interface ObjC_Coordinator : NSObject
 -(id) init: (ObjC_Bitmap*) image windowPos: (CGPoint)windowPos;

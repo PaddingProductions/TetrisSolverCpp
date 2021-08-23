@@ -5,4 +5,8 @@
 //  Created by Shine Chang on 8/21/21.
 //
 
-#import <Foundation/Foundation.h>
+#import "Info.h"
+
+void InitializeLibrary () {
+    ComputePlacements();
+}
