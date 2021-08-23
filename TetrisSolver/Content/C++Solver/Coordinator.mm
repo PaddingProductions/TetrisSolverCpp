@@ -185,8 +185,8 @@ struct TetrisCoordinator {
 }
 -(bool) gameOver {
     if (m_solver->m_gameOver) {
-        NSLog(@"average future size: %lf", d_prediction_size_avg);
-        NSLog(@"average future time: %lf", d_prediction_time_avg);
+        NSLog(@"average prediction size: %lf", d_prediction_size_avg);
+        NSLog(@"average prediction time: %lf", d_prediction_time_avg);
         NSLog(@"average solve time: %lf", d_solve_time_avg);
         NSLog(@"average eval time: %lf", d_evaluater_time_avg);
     }

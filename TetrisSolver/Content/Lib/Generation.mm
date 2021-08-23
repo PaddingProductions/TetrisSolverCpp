@@ -37,21 +37,22 @@ int applyPiece (vector<Future>* futures, const Field* field, PieceType pieceID, 
     set<int> visited;
     int pID_int = int(pieceID);
     
-    for (int i =0; i< c_placementChart[int(pieceID)].size(); i++) {
+    for (int i =0; i< c_placementChart[pID_int].size(); i++) {
         
         Placement* base_placement;
-        {
-            Future* future = &(*futures)[futures_i];
+        { 
+            Future* future = &(*futures)[futures_i++];
             *future = Future(field);
             future->placement = c_placementChart[pID_int][i];
             
             applyPlacement(future, &future->placement);
             future->set_int_r();
             
-            if (!visited.count(future->int_r) && !future->impossible)
-                futures_i++;
-            else
-                visited.insert(future->int_r);
+            //if (!visited.count(future->int_r) && !future->impossible) {
+            //    futures_i++;
+            //    visited.insert(future->int_r);
+            //}
+            
             base_placement = &future->placement;
         }
         {
@@ -64,10 +65,10 @@ int applyPiece (vector<Future>* futures, const Field* field, PieceType pieceID, 
             applySpin(future, &future->placement, nR);
             future->set_int_r();
             
-            if (!visited.count(future->int_r) && !future->impossible)
+            if (!visited.count(future->int_r) && !future->impossible) {
                 futures_i++;
-            else
                 visited.insert(future->int_r);
+            }
         }
         {
             int nR = (base_placement->piece.r + 3) % 4;
@@ -79,10 +80,10 @@ int applyPiece (vector<Future>* futures, const Field* field, PieceType pieceID, 
             applySpin(future, &future->placement, nR);
             future->set_int_r();
             
-            if (!visited.count(future->int_r) && !future->impossible)
+            if (!visited.count(future->int_r) && !future->impossible) {
                 futures_i++;
-            else
                 visited.insert(future->int_r);
+            }
         }
     }
     return futures_i;
