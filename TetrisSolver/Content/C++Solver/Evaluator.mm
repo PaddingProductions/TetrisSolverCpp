@@ -17,7 +17,7 @@ struct Weights {
     int height = -39;
     int height_H2 = -150;
     int height_Q4 = -511;
-    int holes = -1000;
+    int holes = -400;
     int hole_depth = -50;
     int hole_depth_sq = 5;
     int clears[4] = {-230, -200, -160, 400};
@@ -29,7 +29,7 @@ struct Weights {
     int tsdCompleteness[3] = {150, 200, 350};
     int tspin_filled_rows = 100;
     int wasted_t = -150;
-    int tspin[4] = {-300, 121, 410, 600};
+    int tspin[4] = {-300, 151, 410, 600};
     int combo = 150;
     int b2b_bonus = 52;
     int b2b_break = -100;
@@ -43,7 +43,9 @@ int Solver::Evaluate (Future* future) {
     NSDate *start = [NSDate date];
     vector<vector<int>>& chart = future->chart;
     
-    TSpin tspin = FindBestTsd(future);
+    TSpin tspin;
+    if (g_findTSpins) tspin = FindBestTsd(future);
+    
     int maxHeight = -1;
     int holes = 0;
     int heights[10] = {0,0,0,0,0,0,0,0,0,0}; // first contact with filled
@@ -117,7 +119,8 @@ int Solver::Evaluate (Future* future) {
     if (maxHeight >= 10) score += maxHeight * weights.height_H2;
     if (maxHeight >= 15) score += maxHeight * weights.height_Q4;
     score += holes * weights.holes;
-    score += weights.clears[int(future->clears) -1];
+    if (future->clears != ClearType::None && future->clears < ClearType::tspin1)
+        score += weights.clears[int(future->clears) -1];
     score += totalDifference * weights.bumpiness;
     score += totalDifference_sq * weights.bumpiness_sq;
     if (wellDepth == 0) score += wellValue * weights.max_well_depth + weights.well_placement[wellPos];
@@ -127,14 +130,16 @@ int Solver::Evaluate (Future* future) {
     score += future->b2b * weights.b2b_bonus;
     score += future->combo * weights.combo;
     score += future->b2bBreak * weights.b2b_break;
-    
+    /*
     // tspins
     if (g_findTSpins) {
-        if (int(future->clears) <  int(ClearType::tspin1)) score += weights.wasted_t;
-        if (int(future->clears) >= int(ClearType::tspin1)) score += weights.tspin[int(future->clears) -  int (future->clears)];
+        if (int(future->clears) <  int(ClearType::tspin1) && future->placement.piece.ID == PieceType::T)
+            score += weights.wasted_t;
+        if (int(future->clears) >= int(ClearType::tspin1))
+            score += weights.tspin[int(future->clears) - int (ClearType::tspin1)];
         score += weights.tsdCompleteness[tspin.completeness -1];
         score += tspin.filledRows * weights.tspin_filled_rows;
-    }
+    }*/
 
     NSTimeInterval timeInterval = [start timeIntervalSinceNow];
     d_evaluater_time_avg = (d_evaluater_time_avg - timeInterval) / 2.0;
