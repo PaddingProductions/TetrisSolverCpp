@@ -71,12 +71,23 @@ int AssessTsd (const vector<vector<int>>& chart, const int* map, int pX, int pY,
 TSpin Solver::FindBestTsd (Future* future) {
     
     TSpin best = TSpin();
-    int bestScore = -2;
+    int bestScore = -1;
+    
+
+    int heights[10] = {0,0,0,0,0,0,0,0,0,0}; // first contact with filled
+    for (int x=0; x<10; x++) {
+        for (int y=0; y<20; y++) {
+            if (future->chart[y][x] == 1) {
+                heights[x] = 20-y;
+                break;
+            }
+        }
+    }
     
     for (int i=0; i<2; i++) {
         const int* map = TSpinDoubleMaps[i];
         for (int x=1; x<7; x++) { // other postions are impossible
-            for (int y=0; y<20; y++) {
+            for (int y= 19 - heights[x] -3; y< 19 - heights[x]; y++) {
                 int score = AssessTsd(future->chart, map, x, y, i);
                 
                 if (score > bestScore ) {

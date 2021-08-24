@@ -25,7 +25,7 @@ struct Weights {
     int bumpiness_sq = -7;
     int max_well_depth = 50;
     int well_depth = 15;
-    int well_placement[10] = {25, -10, 15, 30, 10, 10, 30, 10, -15, 25};
+    int well_placement[10] = {20, -10, 0, 30, 15, 15, 30, 0, -15, 20};
     int tsdCompleteness[3] = {150, 200, 350};
     int tspin_filled_rows = 100;
     int wasted_t = -150;
