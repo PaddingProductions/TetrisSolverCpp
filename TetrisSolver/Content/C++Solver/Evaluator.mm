@@ -130,7 +130,7 @@ int Solver::Evaluate (Future* future) {
     score += future->b2b * weights.b2b_bonus;
     score += future->combo * weights.combo;
     score += future->b2bBreak * weights.b2b_break;
-    /*
+    
     // tspins
     if (g_findTSpins) {
         if (int(future->clears) <  int(ClearType::tspin1) && future->placement.piece.ID == PieceType::T)
@@ -139,7 +139,7 @@ int Solver::Evaluate (Future* future) {
             score += weights.tspin[int(future->clears) - int (ClearType::tspin1)];
         score += weights.tsdCompleteness[tspin.completeness -1];
         score += tspin.filledRows * weights.tspin_filled_rows;
-    }*/
+    }
 
     NSTimeInterval timeInterval = [start timeIntervalSinceNow];
     d_evaluater_time_avg = (d_evaluater_time_avg - timeInterval) / 2.0;

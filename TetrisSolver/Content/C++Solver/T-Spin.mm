@@ -87,7 +87,7 @@ TSpin Solver::FindBestTsd (Future* future) {
     for (int i=0; i<2; i++) {
         const int* map = TSpinDoubleMaps[i];
         for (int x=1; x<7; x++) { // other postions are impossible
-            for (int y= 19 - heights[x] -3; y< 19 - heights[x]; y++) {
+            for (int y = 0; y< 20 - 3; y++) {
                 int score = AssessTsd(future->chart, map, x, y, i);
                 
                 if (score > bestScore ) {
